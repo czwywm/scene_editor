@@ -155,15 +155,15 @@ async function clickLeft(v, point) {
 		mesh.designType = design.name
 		scene.add(mesh)
 		if (point) mesh.position.copy(point)
-		const { maxView, target } = window.threeEditor.getObjectViews(mesh)
+		const { maxView, target } = threeEditor.getObjectViews(mesh)
 		//检测是否存在maxView
 		if (maxView.x) {
-			window.threeEditor.createGsapAnimation(window.threeEditor.camera.position, maxView)
-			window.threeEditor.createGsapAnimation(window.threeEditor.controls.target, target)
+			threeEditor.createGsapAnimation(threeEditor.camera.position, maxView)
+			threeEditor.createGsapAnimation(threeEditor.controls.target, target)
 		}
 		transformControls.attach(mesh)
 	} else {
-		window.threeEditor.setModelFromInfo({
+		threeEditor.setModelFromInfo({
 			type: 'GLTF',
 			url: window.DEFAULT_CONFIG.BASE_URL + v.modelurl,
 		})
