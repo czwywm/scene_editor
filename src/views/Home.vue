@@ -71,8 +71,8 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import * as THREE from 'three'
 import Editor from './ThreeEditor.vue'
-import LeftPanel from './LeftPanel.vue'
-import RightPanel from './RightPanel.vue'
+import LeftPanel from './Left.vue'
+import RightPanel from './Right.vue'
 
 const DEFAULT_CONFIG = window.DEFAULT_CONFIG || {}
 const route = useRoute()
