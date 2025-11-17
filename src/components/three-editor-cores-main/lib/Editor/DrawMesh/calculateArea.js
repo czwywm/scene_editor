@@ -180,6 +180,25 @@ function calculate2DPolygonArea(points) {
 
 
 /* 空间鞋带公式（基于法向量） */
+// export function spaceShoelaceFormula(points) {
+//     // 计算法向量
+//     const normal = calculatePolygonNormal(points);
+
+//     let area = 0;
+//     const n = points.length;
+
+//     for (let i = 0; i < n; i++) {
+//         const current = points[i];
+//         const next = points[(i + 1) % n];
+
+//         // 使用法向量和边向量的叉积
+//         const edge = new THREE.Vector3().subVectors(next, current);
+//         const cross = new THREE.Vector3().crossVectors(edge, normal);
+//         area += current.dot(cross);
+//     }
+
+//     return Math.abs(area) / 2;
+// }
 export function spaceShoelaceFormula(points) {
     // 计算法向量
     const normal = calculatePolygonNormal(points);
@@ -195,8 +214,9 @@ export function spaceShoelaceFormula(points) {
         const edge = new THREE.Vector3().subVectors(next, current);
         const cross = new THREE.Vector3().crossVectors(edge, normal);
 
-        area += current.dot(cross);
+        // 计算叉积向量的模长（面积贡献）
+        area += cross.length();
     }
 
-    return Math.abs(area) / 2;
+    return area / 2;
 }

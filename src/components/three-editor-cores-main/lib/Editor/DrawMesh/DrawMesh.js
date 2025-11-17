@@ -12,13 +12,6 @@ export function setDrawMeshPanel(drawControls, scene, transformControls, CommonF
     const meshFolder = folder.addFolder('相关控制')
     meshFolder.open()
 
-    const lengthFolder = ref(null);
-    if (drawControls.mode === '直线路径') {
-        lengthFolder.value = folder.addFolder('长度信息');
-        lengthFolder.value.open();
-    }
-
-
     const scaleAreaFolder = ref(null);
     const areaFolder = ref(null);
     if (drawControls.mode === '平面绘制') {
@@ -39,8 +32,6 @@ export function setDrawMeshPanel(drawControls, scene, transformControls, CommonF
 
         mesh: null,
 
-        lineEdgeLengths: [],
-
         areaData: null,
 
     }
@@ -58,7 +49,6 @@ export function setDrawMeshPanel(drawControls, scene, transformControls, CommonF
         }
 
         else {
-
             setMeshPanel(this.mesh, meshFolder.addFolder('变换配置'))
 
             const materialFolder = meshFolder.addFolder('材质配置')
@@ -93,13 +83,9 @@ export function setDrawMeshPanel(drawControls, scene, transformControls, CommonF
 
         draw_Params.drawPointList.push(point)
 
-        setMeshFromPoints(scene, draw_Params)
+        setMeshFromPoints(scene, draw_Params, folder.__folders['长度信息'])
 
         setPointPanel(scene, draw_Params, point, folder)
-
-        if (draw_Params.mode === '直线路径' && draw_Params.lineEdgeLengths) {
-            updateLengthDisplay(lengthFolder.value, draw_Params.lineEdgeLengths, draw_Params.scale);
-        }
 
         if (draw_Params.mode === '平面绘制') {
             updateScaleDisplay(scene, scaleAreaFolder.value, draw_Params, areaFolder.value);
@@ -156,7 +142,7 @@ function clearScaleAreaDisplay(folder) {
 function updateScaleDisplay(scene, folder, draw_Params, areaFolder) {
     clearScaleAreaDisplay(folder);
 
-    if (draw_Params.drawPointList.length < 3) return;
+    if (!folder || draw_Params.drawPointList.length < 3) return;
 
     folder.__scaleControllers = [];
 
@@ -228,24 +214,29 @@ function clearLengthDisplay(folder) {
 }
 
 /* 直线路径 - 更新长度显示   */
-function updateLengthDisplay(folder, lengthData, scale) {
-    let scaleFactor = scale || 1;
+function updateLengthDisplay(folder, params) {
+    const { lineEdgeLengths: lengthData, scale } = params;
 
     clearLengthDisplay(folder);
 
-    lengthData.edges.forEach((edge, index) => {
-        const controller = folder.add(
-            { length: (edge.formattedLength * scaleFactor).toFixed(2) },
-            'length'
-        ).name(`边 ${index + 1} 长度`).listen();
-        folder.__lengthControllers.push(controller);
-    });
+    if (!folder || !lengthData.edges) return;
 
-    const totalController = folder.add(
-        { total: (lengthData.formattedTotalLength * scaleFactor).toFixed(2) },
-        'total'
-    ).name('总长度').listen();
-    folder.__lengthControllers.push(totalController);
+    if (lengthData.edges.length) {
+        lengthData.edges.forEach((edge, index) => {
+            const controller = folder.add(
+                { length: (edge.formattedLength * scale).toFixed(2) },
+                'length'
+            ).name(`边 ${index + 1} 长度`).listen();
+            folder.__lengthControllers.push(controller);
+        });
+
+        const totalController = folder.add(
+            { total: (lengthData.formattedTotalLength * scale).toFixed(2) },
+            'total'
+        ).name('总长度').listen();
+        folder.__lengthControllers.push(totalController);
+    }
+
 }
 
 /* 添加点面板  */
@@ -265,10 +256,7 @@ function setPointPanel(scene, draw_Params, point, folder) {
 
             if (draw_Params.mode === '直线路径' && draw_Params.lineEdgeLengths) {
                 const lengthFolder = folder.__folders['长度信息'];
-                updateLengthDisplay(lengthFolder, draw_Params.lineEdgeLengths, draw_Params.scale);
-                if (drawPointList.length < 2) {
-                    clearLengthDisplay(lengthFolder);
-                }
+                updateLengthDisplay(lengthFolder, draw_Params);
             }
 
             if (draw_Params.mode === '平面绘制') {
@@ -348,8 +336,11 @@ function setAdditionalOptions(scene, draw_Params, folder, params) {
             draw_Params.scale = 1
 
         }
-
-        folder.add(draw_Params, 'scale').name('比例尺').onChange(() => { setLineScale(draw_Params, folder) }).step(1)
+        const lengthFolder = folder.addFolder('长度信息');
+        folder.add(draw_Params, 'scale').name('比例尺').onChange(() => setMeshFromPoints(scene, draw_Params, lengthFolder)).step(1)
+        if (draw_Params.lineEdgeLengths) {
+            setMeshFromPoints(scene, draw_Params, lengthFolder);
+        }
 
     } else if (draw_Params.mode === '平面绘制') {
 
@@ -371,13 +362,8 @@ function setAdditionalOptions(scene, draw_Params, folder, params) {
     }
 }
 
-function setLineScale(draw_Params, folder) {
-    const lengthFolder = folder.__folders['长度信息'];
-    updateLengthDisplay(lengthFolder, draw_Params.lineEdgeLengths, draw_Params.scale);
-}
-
 /* 生成绘制物体 */
-function setMeshFromPoints(scene, params) {
+function setMeshFromPoints(scene, params, folder) {
 
     switch (params.mode) {
 
@@ -410,6 +396,15 @@ function setMeshFromPoints(scene, params) {
         case '直线路径':
 
             setUpdateLineMesh(scene, params)
+            setTimeout(() => {
+                if (folder && params.lineEdgeLengths) {
+                    folder.open();
+                    updateLengthDisplay(folder, params);
+                }
+                if (params.drawPointList.length < 2) {
+                    clearLengthDisplay(folder);
+                }
+            }, 0);
 
             break;
 

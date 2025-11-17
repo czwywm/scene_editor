@@ -1,3 +1,4 @@
+import * as THREE from 'three'
 import { createLine2FromPoints } from '../../Api/ThreeApi'
 
 export function setUpdateLineMesh(scene, drawParams) {
@@ -15,6 +16,8 @@ export function setUpdateLineMesh(scene, drawParams) {
             drawParams.callback?.('remove')
 
         }
+
+        drawParams.lineEdgeLengths = { edges: [], totalLength: 0, formattedTotalLength: '0.00' };
 
         return
 
@@ -58,13 +61,41 @@ export function setUpdateLineMesh(scene, drawParams) {
 }
 
 
+// function calculateEdgeLengths(points) {
+//     const edgeLengths = [];
+//     const totalLength = { value: 0 };
+
+//     for (let i = 0; i < points.length - 1; i++) {
+//         const start = points[i];
+//         const end = points[i + 1];
+//         const distance = start.distanceTo(end);
+//         edgeLengths.push({
+//             start: `点${i} (${start.x.toFixed(2)}, ${start.y.toFixed(2)}, ${start.z.toFixed(2)})`,
+//             end: `点${i + 1} (${end.x.toFixed(2)}, ${end.y.toFixed(2)}, ${end.z.toFixed(2)})`,
+//             length: distance,
+//             formattedLength: distance.toFixed(2)
+//         });
+
+//         totalLength.value += distance;
+//     }
+
+//     const lineEdgeLengths = {
+//         edges: edgeLengths,
+//         totalLength: totalLength.value,
+//         formattedTotalLength: totalLength.value.toFixed(2)
+//     };
+
+//     return lineEdgeLengths;
+// }
 function calculateEdgeLengths(points) {
     const edgeLengths = [];
     const totalLength = { value: 0 };
 
     for (let i = 0; i < points.length - 1; i++) {
-        const start = points[i];
-        const end = points[i + 1];
+        // 确保点是 Vector3 对象
+        const start = new THREE.Vector3(points[i].x, points[i].y, points[i].z);
+        const end = new THREE.Vector3(points[i + 1].x, points[i + 1].y, points[i + 1].z);
+
         const distance = start.distanceTo(end);
         edgeLengths.push({
             start: `点${i} (${start.x.toFixed(2)}, ${start.y.toFixed(2)}, ${start.z.toFixed(2)})`,

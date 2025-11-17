@@ -181,7 +181,7 @@ export function loadFBX(url = '', callback) {
 }
 
 /* gltf 模型 */
-export function loadGLTF(url = '', dracoPath = '/draco/', callback = () => { }) {
+export function loadGLTF(url = '', point, dracoPath = '/draco/', callback = () => { }) {
   const loader = new GLTFLoader()
 
   const loaderService = { progress: () => { }, complete: () => { } }
@@ -195,6 +195,8 @@ export function loadGLTF(url = '', dracoPath = '/draco/', callback = () => { }) 
       loaderService.complete(gltf.scene)
 
       gltf.scene.animations = gltf.animations
+
+      gltf.scene.position.set(point.x, point.y, point.z)
 
       callback(gltf.scene)
     },

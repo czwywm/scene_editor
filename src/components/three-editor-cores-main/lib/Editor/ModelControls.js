@@ -17,9 +17,9 @@ export function modelControlsInstall(scene, controls, transformControls, Compose
 
     modelControls.sceneInsertModel = (dracoPath, rootInfo, params) => {
 
-        const { url, type } = rootInfo
+        const { url, type, point, name } = rootInfo
 
-        return loadModel(url, type, dracoPath, model => {
+        return loadModel(url, type, point, dracoPath, model => {
 
             scene.add(resolveGroup(model))
 
@@ -27,7 +27,7 @@ export function modelControlsInstall(scene, controls, transformControls, Compose
 
             setGroupStorage(MixerList, model, params)
 
-            modelControls.rootFolder && setGroupPanel(controls, transformControls, Composer, MixerList, model, modelControls.rootFolder.addFolder(model.name + model.id))
+            modelControls.rootFolder && setGroupPanel(controls, transformControls, Composer, MixerList, model, modelControls.rootFolder.addFolder((name || model.name) + model.id))
 
         })
 

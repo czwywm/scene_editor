@@ -83,7 +83,7 @@ export function setDrawControlsPanel(scene, transformControls, CommonFrameList, 
                         drawControls.mode + '-' + Date.now(),
                         {},
                     )
-
+                    // drawControls.currentDrawFolder && setAreaScalePanel(scene, transformControls, CommonFrameList, folder, drawControls.drawRootFolder.addFolder("比例尺配置"))
                     setDrawMeshPanel(
                         drawControls,
                         scene,

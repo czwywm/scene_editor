@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { shaderInstall } from './Group/Shader/Shader'
-import { setMainPanel } from './RootPanel/MainPanel'
+import { setMainPanel, openControlPanel } from './RootPanel/MainPanel'
 import { setSelectPanel } from './RootPanel/SelectPanel'
 import { getBasicStorage, setBasicStorage, setBasicPanel } from './Basic'
 import {
@@ -163,95 +163,88 @@ export function initSceneEditor(
     setBorderGroupListStorage(scene, CommonFrameList, sceneParams.borderGroupList)
 
 
-    function openControlPanel() {
-        /* 面板 */
-        const GUI = setMainPanel(userPermissions.proxy, userPermissions.autoPlace)
+    const GUI = setMainPanel(userPermissions.proxy, userPermissions.autoPlace)
 
-        if (GUI === null) return;
+    setBasicPanel(
+        scene,
+        camera,
+        renderer,
+        controls,
+        Composer,
+        transformControls,
+        GUI.addFolder('场景配置'),
+    )
 
-        setBasicPanel(
-            scene,
-            camera,
-            renderer,
-            controls,
-            Composer,
-            transformControls,
-            GUI.addFolder('场景配置'),
-        )
+    setHandlerPanel(scene, transformControls, Stats, handler, GUI.addFolder('控制配置'))
 
-        setHandlerPanel(scene, transformControls, Stats, handler, GUI.addFolder('控制配置'))
+    /* 3d 物体控制 */
+    const Mesh_3D_Folder = GUI.addFolder('3D物体')
 
-        /* 3d 物体控制 */
-        const Mesh_3D_Folder = GUI.addFolder('3D物体')
+    Mesh_3D_Folder.open()
 
-        Mesh_3D_Folder.open()
+    setModelControlsPanel(modelControls, Mesh_3D_Folder.addFolder('模型配置'))
 
-        setModelControlsPanel(modelControls, Mesh_3D_Folder.addFolder('模型配置'))
+    setDrawControlsPanel(
+        scene,
+        transformControls,
+        CommonFrameList,
+        Mesh_3D_Folder.addFolder('绘制配置'),
+    )
 
-        setDrawControlsPanel(
-            scene,
-            transformControls,
-            CommonFrameList,
-            Mesh_3D_Folder.addFolder('绘制配置'),
-        )
+    setInnerMeshControlsPanel(
+        scene,
+        transformControls,
+        CommonFrameList,
+        Mesh_3D_Folder.addFolder('内置物体'),
+    )
 
-        setInnerMeshControlsPanel(
-            scene,
-            transformControls,
-            CommonFrameList,
-            Mesh_3D_Folder.addFolder('内置物体'),
-        )
+    setChartsMapControlsPanel(
+        scene,
+        transformControls,
+        CommonFrameList,
+        Mesh_3D_Folder.addFolder('三维地图'),
+    )
 
-        setChartsMapControlsPanel(
-            scene,
-            transformControls,
-            CommonFrameList,
-            Mesh_3D_Folder.addFolder('三维地图'),
-        )
+    setParticleControlsPanel(
+        scene,
+        transformControls,
+        DOM,
+        CommonFrameList,
+        Mesh_3D_Folder.addFolder('粒子物体'),
+    )
 
-        setParticleControlsPanel(
-            scene,
-            transformControls,
-            DOM,
-            CommonFrameList,
-            Mesh_3D_Folder.addFolder('粒子物体'),
-        )
+    setBorderGroupControlsPanel(
+        scene,
+        transformControls,
+        CommonFrameList,
+        Mesh_3D_Folder.addFolder('边界物体'),
+    )
 
-        setBorderGroupControlsPanel(
-            scene,
-            transformControls,
-            CommonFrameList,
-            Mesh_3D_Folder.addFolder('边界物体'),
-        )
+    setTextMeshControlsPanel(
+        scene,
+        transformControls,
+        CommonFrameList,
+        Mesh_3D_Folder.addFolder('文本物体'),
+    )
 
-        setTextMeshControlsPanel(
-            scene,
-            transformControls,
-            CommonFrameList,
-            Mesh_3D_Folder.addFolder('文本物体'),
-        )
+    setDesignMeshControlsPanel(
+        scene,
+        renderer,
+        transformControls,
+        DOM,
+        CommonFrameList,
+        Mesh_3D_Folder.addFolder('设计物体'),
+    )
 
-        setDesignMeshControlsPanel(
-            scene,
-            renderer,
-            transformControls,
-            DOM,
-            CommonFrameList,
-            Mesh_3D_Folder.addFolder('设计物体'),
-        )
+    setAnimationControlsPanel(
+        handler,
+        controls,
+        transformControls,
+        CommonFrameList,
+        GUI.addFolder('动画配置'),
+    )
 
-        setAnimationControlsPanel(
-            handler,
-            controls,
-            transformControls,
-            CommonFrameList,
-            GUI.addFolder('动画配置'),
-        )
-
-        return GUI
-    }
-
-    setSelectPanel(scene, renderer, ShaderList, DOM, CommonFrameList, openControlPanel)
+    setSelectPanel(scene, renderer, ShaderList, DOM, CommonFrameList, GUI)
 
     return {
         handler,

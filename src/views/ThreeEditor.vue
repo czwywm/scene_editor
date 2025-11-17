@@ -186,7 +186,7 @@ const createScene = () => {
 				fps: null,
 				pixelRatio: window.devicePixelRatio * 1.5,
 				webglRenderParams: { antialias: true, alpha: true, logarithmicDepthBuffer: true },
-				userPermissions: { autoPlace: true, proxy: false },
+				userPermissions: { autoPlace: false, proxy: false },
 			},
 			sceneParams: JSON.parse(localStorage.getItem('sceneParams')),
 			meshListParams: JSON.parse(localStorage.getItem('meshListParams')),
@@ -197,7 +197,7 @@ const createScene = () => {
 			},
 		})
 	} catch (error) {
-		console.log('初始化失败：', e)
+		console.log('初始化失败：', error)
 	}
 
 	emits('emitThreeEditor', threeEditor)

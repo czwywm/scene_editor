@@ -1,6 +1,8 @@
 import * as dat from 'dat.gui'
 
 let dialogInstance = null;
+let guiInstance = null;
+let guiComponent = null;
 
 export function setMainPanel(proxy, autoPlace) {
 
@@ -52,18 +54,45 @@ export function setMainPanel(proxy, autoPlace) {
 
     const GUI = proxy ? ProxyGUI : new dat.GUI({ autoPlace })
 
-    GUI.__closeButton?.remove()
+    if (!proxy) {
+        GUI.__closeButton?.remove()
+    }
 
-    // 调用函数创建弹窗
-    const flag = createDialog(GUI.domElement);
+    guiInstance = GUI;
+    guiComponent = GUI.domElement;
 
-    return flag ? GUI : null;
+    guiComponent.style.display = 'none';
+
+    return GUI;
 
 }
 
-const createDialog = (component) => {
+export function openControlPanel() {
+    if (!guiComponent) {
+        console.error('GUI组件未初始化，请先调用setMainPanel');
+        return;
+    }
 
-    if (dialogInstance) return false;
+    if (dialogInstance) {
+        dialogInstance.style.display = 'block';
+        if (guiComponent) guiComponent.style.display = 'block';
+        return;
+    }
+
+    guiComponent.style.display = 'block';
+    createDialog(guiComponent);
+}
+
+export function hideControlPanel() {
+    if (dialogInstance && guiComponent) {
+        dialogInstance.style.display = 'none';
+    }
+    if (guiComponent) {
+        guiComponent.style.display = 'none';
+    }
+}
+
+const createDialog = (component) => {
 
     const container = document.createElement('div');
     container.style.position = 'fixed';
@@ -143,26 +172,13 @@ const createDialog = (component) => {
     // 添加拖拽功能
     makeDraggable(container, titleBar);
 
+    // 关闭对话框的函数
     function closeDialog() {
         if (dialogInstance) {
-            dialogInstance.remove(); // 从DOM中移除容器
-            dialogInstance = null; // 重置实例引用
+            // 隐藏而不是移除，以便下次可以快速显示
+            hideControlPanel();
         }
     }
-
-    const handleKeydown = (e) => {
-        if (e.key === 'Escape' && dialogInstance) {
-            closeDialog();
-            document.removeEventListener('keydown', handleKeydown);
-        }
-    };
-    document.addEventListener('keydown', handleKeydown);
-
-    container.addEventListener('DOMNodeRemoved', () => {
-        document.removeEventListener('keydown', handleKeydown);
-    });
-
-    return true;
 };
 
 // 拖拽功能实现
@@ -214,5 +230,33 @@ const makeDraggable = (container, handle) => {
 
     function setTranslate(xPos, yPos, el) {
         el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
+    }
+};
+
+// 提供外部函数来检查和控制拖拽框状态
+export const controlPanelManager = {
+    // 检查控制面板是否打开
+    isOpen: () => dialogInstance && dialogInstance.style.display !== 'none',
+
+    // 显示控制面板
+    open: () => openControlPanel(),
+
+    // 隐藏控制面板
+    hide: () => hideControlPanel(),
+
+    // 获取GUI实例
+    getGUI: () => guiInstance,
+
+    // 完全销毁（移除DOM元素）
+    destroy: () => {
+        if (dialogInstance) {
+            dialogInstance.remove();
+            dialogInstance = null;
+        }
+        if (guiInstance && typeof guiInstance.destroy === 'function') {
+            guiInstance.destroy();
+        }
+        guiInstance = null;
+        guiComponent = null;
     }
 };

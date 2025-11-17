@@ -53,28 +53,13 @@
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import axios from 'axios'
+import * as THREE from 'three'
 
 const DEFAULT_CONFIG = window.DEFAULT_CONFIG || {}
-const data = reactive([
-	{
-		icon: 'set-up',
-		title: '配置案例',
-		list: [],
-	},
-	{
-		icon: 'office-building',
-		title: '模型',
-		list: [],
-	},
-	{
-		title: '组件',
-		icon: 'connection',
-		list: [],
-	},
-])
 
-const active = ref(data[0].title)
-const showList = ref(data[0].list)
+const data = reactive([])
+const active = ref('')
+const showList = ref([])
 // 获取模型信息
 async function getModel() {
 	axios
@@ -95,11 +80,8 @@ async function getModel() {
 						list: res.data.data.mylist,
 					},
 				)
-
-				// 更新 showList 如果当前激活的是新添加的项
-				if (active.value === '我的库') {
-					showList.value = res.data.data.mylist
-				}
+				active.value = data[0].title
+				showList.value = data[0].list
 			}
 		})
 }
@@ -140,33 +122,27 @@ function getItemDisplayName(item) {
 	return '-'
 }
 
-async function clickLeft(v, point) {
-	if (!window.threeEditor) return
-	if (active.value === '配置案例') {
-		window.currentOnlineSceneName = v.split('/').pop().replace('.json', '')
-		loadScene(v)
-	} else if (active.value === '模型') loadModel(v, point)
-	else if (active.value === '组件') {
-		const { scene, transformControls } = threeEditor
-		const design = ThreeEditor.__DESIGNS__.find((d) => d.label === v)
-		const mesh = await design.create(null, threeEditor, threeEditor)
-		if (!mesh) return
-		mesh.isDesignMesh = true
-		mesh.designType = design.name
-		scene.add(mesh)
-		if (point) mesh.position.copy(point)
-		const { maxView, target } = threeEditor.getObjectViews(mesh)
-		//检测是否存在maxView
-		if (maxView.x) {
-			threeEditor.createGsapAnimation(threeEditor.camera.position, maxView)
-			threeEditor.createGsapAnimation(threeEditor.controls.target, target)
-		}
-		transformControls.attach(mesh)
-	} else {
-		threeEditor.setModelFromInfo({
-			type: 'GLTF',
-			url: window.DEFAULT_CONFIG.BASE_URL + v.modelurl,
-		})
+function clickLeft(v, point) {
+	threeEditor.setModelFromInfo({
+		type: 'GLTF',
+		name: v.modelname,
+		url: window.DEFAULT_CONFIG.BASE_URL + v.modelurl,
+		point: point || { x: 0, y: 0, z: 0 },
+	})
+}
+const raycaster = new THREE.Raycaster()
+const mouse = new THREE.Vector2()
+const dragAdd = (e, v) => {
+	e.preventDefault()
+	const { clientX, clientY } = e
+	mouse.x = (clientX / window.innerWidth) * 2 - 1
+	mouse.y = -(clientY / window.innerHeight) * 2 + 1
+	raycaster.setFromCamera(mouse, threeEditor.viewer.camera)
+	const intersects = raycaster.intersectObjects(threeEditor.viewer.scene.children, true)
+	if (intersects.length > 0) {
+		const intersect = intersects[0]
+		const { point } = intersect
+		clickLeft(v, point)
 	}
 }
 
@@ -237,7 +213,7 @@ onMounted(() => {
 .collapse-container {
 	width: 100%;
 	height: 100%;
-	overflow: auto;
+	overflow-y: auto;
 
 	:deep(.el-collapse) {
 		border: none;
@@ -310,6 +286,47 @@ onMounted(() => {
 			box-sizing: border-box;
 			flex-direction: column;
 		}
+	}
+}
+
+.build {
+	padding: 4px;
+	box-sizing: border-box;
+	display: grid;
+	grid-auto-rows: 80px;
+	grid-template-columns: repeat(2, 1fr);
+	overflow-y: auto;
+	height: 100%;
+	justify-items: center;
+	width: 100%;
+
+	.back {
+		height: 70px;
+		width: 90px;
+		border-radius: 6px;
+		border: 1px solid #676768;
+		display: flex;
+		padding: 5px;
+		box-sizing: border-box;
+	}
+
+	.item {
+		border: 1px solid #3d3d3d;
+		border-radius: 3px;
+		height: 100%;
+		width: 100%;
+		word-wrap: break-word;
+		word-break: break-all;
+		font-size: 12px;
+		display: flex;
+		overflow-wrap: break-word;
+		text-align: center;
+		justify-content: center;
+		align-content: center;
+		justify-items: center;
+		align-items: center;
+		padding: 4px;
+		box-sizing: border-box;
 	}
 }
 </style>
