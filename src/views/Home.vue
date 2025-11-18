@@ -1,8 +1,34 @@
 <template>
-	<div v-show="!namePreviewScene" class="layout">
+	<div v-show="!namePreviewScene" class="layout" @contextmenu.prevent="handleContextMenu" @touchmove.prevent="handleTouchMove" @mousedown="handleMouseDown">
 		<div class="header" v-show="!previewScene">
 			<div class="header-box">
 				<div class="header-left">
+					<el-select v-model="dataCores.sceneName" class="m-2" placeholder="场景" style="width: 200px">
+						<el-option v-for="item in dataCores.options" :key="item.name" :label="item.name" :value="item.name" style="color: rgb(255, 255, 255)">
+							<div style="width: 100%; display: flex; justify-content: space-between">
+								<span>{{ item.name }}</span>
+								<span>
+									<el-popconfirm title="确定删除？" @confirm="() => delScene(item)">
+										<template #reference>
+											<el-icon style="color: aliceblue">
+												<Close />
+											</el-icon>
+										</template>
+									</el-popconfirm>
+								</span>
+							</div>
+						</el-option>
+					</el-select>
+					<el-button class="btn-add" link icon="plus" @click="sceneVisible = true">新建场景</el-button>
+					<el-dialog v-model="sceneVisible" title="命名场景" width="500">
+						<el-input v-model="inputSceneName" placeholder="请输入场景名称" />
+						<template #footer>
+							<div class="dialog-footer">
+								<el-button @click="sceneVisible = false">取消</el-button>
+								<el-button type="primary" @click="createEditor">确认</el-button>
+							</div>
+						</template>
+					</el-dialog>
 					<el-button class="btn-add" link icon="Upload" @click="imgVisible = true">导入图片</el-button>
 					<el-dialog v-model="imgVisible" title="上传图片" width="500">
 						<el-upload class="upload-demo" drag :action="DEFAULT_CONFIG.BASE_URL + 'api/common/1.0/uploadFile'" :before-upload="beforeUpload" :on-success="handleSuccess" :on-remove="handleRemove" :limit="1" :show-file-list="true" :data="{ dir: `${DEFAULT_CONFIG.BASE_NAME}/file` }">
@@ -61,12 +87,12 @@
 				</div>
 			</div>
 		</div>
-		<Editor @emitThreeEditor="emitThreeEditor" class="editor" />
+		<Editor @emitThreeEditor="emitThreeEditor" :dataCores="dataCores" class="editor" />
 	</div>
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, reactive } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import * as THREE from 'three'
@@ -82,7 +108,14 @@ const leftCollapsed = ref(false)
 const rightCollapsed = ref(false)
 const imgVisible = ref(false)
 const imageUrl = ref(null)
+const sceneVisible = ref(false)
+const inputSceneName = ref('')
+const isRightMouseDown = ref(false)
 let namePreviewScene = false
+const dataCores = reactive({
+	sceneName: localStorage.getItem('new_sceneName') || '三维测试',
+	options: JSON.parse(localStorage.getItem('new_sceneList')) || [{ name: '三维测试' }],
+})
 
 watch(previewScene, (val) => {
 	leftCollapsed.value = val
@@ -191,10 +224,67 @@ const pict = () => {
 
 const saveScene = () => {
 	try {
+		// if (dataCores.options.find(item => item.name === dataCores.sceneName)) localStorage.setItem(dataCores.sceneName + '-newEditor', JSON.stringify(threeEditor.saveSceneEdit()))
+		// else dataCores.sceneName = ''
 		threeEditor.saveSceneEditor()
 		ElMessage.success('场景保存成功')
+		saveLocal()
 	} catch (error) {
 		return ElMessage.error(error.message || '场景验证失败，无法保存')
+	}
+}
+
+const createEditor = () => {
+	if (dataCores.options.some((item) => item.name === inputSceneName.value)) return ElMessage.error('场景名称已存在')
+	dataCores.options.push({ name: inputSceneName.value })
+	dataCores.sceneName = inputSceneName.value
+	ElMessage.success(dataCores.sceneName + '添加成功')
+	saveLocal()
+	sceneVisible.value = false
+}
+
+const saveLocal = () => {
+	localStorage.setItem('new_sceneList', JSON.stringify(dataCores.options))
+	localStorage.setItem('new_sceneName', dataCores.sceneName)
+}
+
+const delScene = (item) => {
+	const index = dataCores.options.findIndex((i) => i.name === item.name)
+	if (index > -1) {
+		dataCores.options.splice(index, 1)
+		localStorage.removeItem(item.name + '-newEditor')
+		saveLocal()
+		if (dataCores.sceneName === item.name) dataCores.sceneName = dataCores.options[0]?.name || '三维测试'
+	}
+}
+const handleContextMenu = (event) => {
+	event.preventDefault()
+}
+const handleTouchMove = (e) => {
+	e.preventDefault()
+	console.log('触摸滑动被阻止')
+}
+
+const handleMouseDown = (e) => {
+	if (e.button === 2) {
+		// 右键
+		isRightMouseDown.value = true
+		e.preventDefault()
+
+		const mouseMoveHandler = (moveEvent) => {
+			if (isRightMouseDown.value) {
+				moveEvent.preventDefault()
+			}
+		}
+
+		const mouseUpHandler = () => {
+			isRightMouseDown.value = false
+			document.removeEventListener('mousemove', mouseMoveHandler, { passive: false })
+			document.removeEventListener('mouseup', mouseUpHandler, { passive: false })
+		}
+
+		document.addEventListener('mousemove', mouseMoveHandler, { passive: false })
+		document.addEventListener('mouseup', mouseUpHandler, { passive: false })
 	}
 }
 </script>

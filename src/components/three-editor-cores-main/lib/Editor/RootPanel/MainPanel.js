@@ -96,8 +96,8 @@ const createDialog = (component) => {
 
     const container = document.createElement('div');
     container.style.position = 'fixed';
-    container.style.top = '60px';
-    container.style.right = '60px';
+    container.style.top = '180px';
+    container.style.right = '120px';
     container.style.zIndex = '1000';
     container.style.minWidth = '245px';
     container.style.backgroundColor = '#1a1a1a';

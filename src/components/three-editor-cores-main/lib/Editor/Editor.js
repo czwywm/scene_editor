@@ -131,6 +131,7 @@ export function initSceneEditor(
         transformControls.detach()
 
         Composer.effectPass.outlinePass.selectedObjects = []
+        console.log("scene", scene)
     }
 
     /* 安装 */
@@ -180,7 +181,7 @@ export function initSceneEditor(
     /* 3d 物体控制 */
     const Mesh_3D_Folder = GUI.addFolder('3D物体')
 
-    Mesh_3D_Folder.open()
+    // Mesh_3D_Folder.open()
 
     setModelControlsPanel(modelControls, Mesh_3D_Folder.addFolder('模型配置'))
 

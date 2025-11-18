@@ -1,5 +1,23 @@
 <template>
 	<div class="right">
+		<div class="skyList">
+			<!-- 下拉菜单替换原有标题 -->
+			<div class="control-header">
+				<el-select v-model="selectedSet" placeholder="选择素材套" class="set-select">
+					<el-option v-for="i in datalist" :key="i.name" :label="i.name" :value="i.name" />
+				</el-select>
+				<div class="flex">
+					<el-button @click="setSky(selectedSet)" icon="CircleCheckFilled" style="height: 30px; width: 30px" title="设为天空" />
+					<el-button @click="setEnv(selectedSet)" icon="StarFilled" style="height: 30px; width: 30px" title="设为环境" />
+				</div>
+			</div>
+			<!-- 资源预览 -->
+			<div class="resource">
+				<div v-for="k in 6" :key="k">
+					<el-image class="img" :src="`${getUrl}${k}.png`" fit="cover" />
+				</div>
+			</div>
+		</div>
 		<div class="helper-controls">
 			<div class="control-group">
 				<div class="group-header">
@@ -41,6 +59,32 @@ import { computed, reactive, ref, watch } from 'vue'
 const pixelRatio = ref(1)
 const showGrid = ref(true)
 const showAxes = ref(true)
+const selectedSet = ref('蓝天')
+const datalist = reactive([
+	{
+		name: '蓝天',
+		url: 'https://z2586300277.github.io/three-editor/dist/files/scene/skyBox0/',
+	},
+	{
+		name: '森林',
+		url: 'https://z2586300277.github.io/three-editor/dist/files/scene/skyBox8/',
+	},
+	{ name: '清除', url: '' },
+])
+
+const getUrl = computed(() => datalist.find((i) => i.name === selectedSet.value).url)
+const setSky = (v) => {
+	const set = datalist.find((i) => i.name === v)
+	if (!set.url) return (threeEditor.viewer.scene.background = null)
+	threeEditor.setSky(Array.from({ length: 6 }, (_, i) => `${set.url || ''}${i + 1}.png`))
+}
+
+const setEnv = (v) => {
+	const set = datalist.find((i) => i.name === v)
+	if (!set.url) return (threeEditor.viewer.scene.background = null)
+	threeEditor.setGlobalEnvBackground(Array.from({ length: 6 }, (_, i) => `${set.url || ''}${i + 1}.png`))
+	threeEditor.viewer.scene.environmentEnabled = true
+}
 
 if (localStorage.getItem('new_threeEditor_pixelRatio')) pixelRatio.value = parseFloat(localStorage.getItem('new_threeEditor_pixelRatio'))
 watch(pixelRatio, (val) => {
@@ -68,6 +112,49 @@ const toggleAxes = (val) => {
 	right: 0;
 	z-index: 100;
 	display: flex;
+	flex-direction: column;
+}
+
+.skyList {
+	width: 100%;
+	height: 33%;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 10px;
+	box-sizing: border-box;
+}
+
+.control-header {
+	height: 40px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	.set-select {
+		flex: 1;
+		margin-right: 10px;
+	}
+
+	.flex {
+		display: flex;
+		gap: 4px;
+	}
+}
+
+.resource {
+	display: grid;
+	height: calc(100% - 20px);
+	width: 100%;
+	grid-template-columns: repeat(3, 1fr);
+	grid-template-rows: repeat(2, 1fr);
+	justify-items: center;
+	align-items: center;
+}
+
+.img {
+	width: 50px;
+	height: 50px;
 }
 
 .helper-controls {

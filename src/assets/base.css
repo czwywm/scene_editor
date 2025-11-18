@@ -84,7 +84,9 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 }
-
+.dg.main {
+	width: 100% !important;
+}
 .dg.main.a {
 	margin-right: 0px !important;
 }
