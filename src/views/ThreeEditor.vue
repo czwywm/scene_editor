@@ -16,21 +16,56 @@ const emits = defineEmits(['emitThreeEditor'])
 watch(
 	() => dataCores.sceneName,
 	(val) => {
-		let params = localStorage.getItem(val + '-newEditor')
-		params = JSON.parse(params) || tamplateJson
-
+		let savedParams = localStorage.getItem(val + '-newEditor')
 		try {
-			threeEditor.resetEditorStorage(params)
-			console.log('11')
+			if (threeEditor && threeEditor.viewer) {
+				// 先销毁场景渲染器
+				threeEditor.viewer.destroySceneRender()
+				// 再销毁控制面板管理器
+				threeEditor.viewer.controlPanelManager.destroy()
+				// 创建新场景
+				createScene()
+			} else {
+				console.warn('threeEditor未初始化，无法重置场景')
+			}
 		} catch (error) {
-			localStorage.removeItem(val + '-newEditor')
+			console.error('切换场景时出错:', error)
+			// 如果出错，移除可能损坏的存储
+			if (savedParams) {
+				localStorage.removeItem(val + '-newEditor')
+				console.warn('已移除可能损坏的场景存储')
+			}
 		}
 	},
 )
 // 初始化场景
 const createScene = () => {
 	try {
-		// let sceneParams = JSON.parse(localStorage.getItem(dataCores.sceneName + '-newEditor')) || tamplateJson
+		// 尝试从localStorage获取场景参数，如果不存在则使用默认模板
+		let sceneParams = null
+		let meshListParams = null
+		let skyParams = null
+
+		// 首先尝试获取特定场景的参数
+		const savedSceneData = localStorage.getItem(dataCores.sceneName + '-newEditor')
+
+		if (savedSceneData) {
+			// 如果有保存的特定场景数据，使用它
+			const sceneData = JSON.parse(savedSceneData)
+			sceneParams = sceneData.sceneParams || null
+			meshListParams = sceneData.meshListParams || null
+			skyParams = sceneData.skyParams || null
+			console.log('加载特定场景数据:', dataCores.sceneName)
+		}
+
+		// 如果所有参数都不存在，使用模板数据
+		if (!sceneParams && !meshListParams && !skyParams) {
+			sceneParams = tamplateJson.sceneParams || null
+			meshListParams = tamplateJson.meshListParams || null
+			skyParams = tamplateJson.skyParams || null
+			console.log('使用默认模板数据')
+		}
+
 		threeEditor = new ThreeEditor({
 			threeBoxRef: threeBox.value,
 			rendererParams: {
@@ -39,21 +74,28 @@ const createScene = () => {
 				webglRenderParams: { antialias: true, alpha: true, logarithmicDepthBuffer: true },
 				userPermissions: { autoPlace: false, proxy: false },
 			},
-			sceneParams: JSON.parse(localStorage.getItem('sceneParams')),
-			meshListParams: JSON.parse(localStorage.getItem('meshListParams')),
-			skyParams: JSON.parse(localStorage.getItem('skyParams')),
+			sceneParams: sceneParams,
+			meshListParams: meshListParams,
+			skyParams: skyParams,
 			saveEditorCallBack: (sceneParams, meshListParams) => {
-				localStorage.setItem('sceneParams', JSON.stringify(sceneParams))
-				localStorage.setItem('meshListParams', JSON.stringify(meshListParams))
+				// 同时保存到特定场景存储
+				const sceneData = {
+					sceneParams,
+					meshListParams,
+					skyParams,
+				}
+				localStorage.setItem(dataCores.sceneName + '-newEditor', JSON.stringify(sceneData))
 			},
 		})
 	} catch (error) {
-		console.log('初始化失败：', error)
+		console.error('初始化场景失败:', error)
 	}
 
-	emits('emitThreeEditor', threeEditor)
-	// 设置事件监听
-	setupEventListeners()
+	if (threeEditor) {
+		emits('emitThreeEditor', threeEditor)
+		// 设置事件监听
+		setupEventListeners()
+	}
 }
 
 // 设置事件监听

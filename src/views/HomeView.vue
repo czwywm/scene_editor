@@ -8,7 +8,7 @@
 							<div style="width: 100%; display: flex; justify-content: space-between">
 								<span>{{ item.name }}</span>
 								<span>
-									<el-popconfirm title="确定删除？" @confirm="() => delScene(item)">
+									<el-popconfirm title="确定删除？" @confirm="delScene(item)">
 										<template #reference>
 											<el-icon style="color: aliceblue">
 												<Close />
@@ -65,6 +65,7 @@
 				</div>
 			</div>
 		</div>
+
 		<div class="main-container">
 			<div class="side-panel left-panel" :class="{ collapsed: leftCollapsed }">
 				<div style="height: 100%; width: 100%" v-show="!leftCollapsed">
@@ -76,6 +77,7 @@
 					</el-icon>
 				</div>
 			</div>
+
 			<div class="side-panel right-panel" :class="{ collapsed: rightCollapsed }">
 				<div style="height: 100%; width: 100%" v-show="!rightCollapsed">
 					<RightPanel ref="rightPanel" />
@@ -87,13 +89,14 @@
 				</div>
 			</div>
 		</div>
+
 		<Editor @emitThreeEditor="emitThreeEditor" :dataCores="dataCores" class="editor" />
 	</div>
 </template>
 
 <script setup>
 import { ref, watch, reactive } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import * as THREE from 'three'
 import Editor from './ThreeEditor.vue'
@@ -102,7 +105,6 @@ import RightPanel from './Right.vue'
 
 const DEFAULT_CONFIG = window.DEFAULT_CONFIG || {}
 const route = useRoute()
-const router = useRouter()
 const previewScene = ref(false)
 const leftCollapsed = ref(false)
 const rightCollapsed = ref(false)
@@ -117,6 +119,10 @@ const dataCores = reactive({
 	options: JSON.parse(localStorage.getItem('new_sceneList')) || [{ name: '三维测试' }],
 })
 
+const emitThreeEditor = (threeEditor) => {
+	window.threeEditor = threeEditor
+}
+
 watch(previewScene, (val) => {
 	leftCollapsed.value = val
 	rightCollapsed.value = val
@@ -124,10 +130,6 @@ watch(previewScene, (val) => {
 
 if (route.query.sceneName) {
 	namePreviewScene = true
-}
-
-const emitThreeEditor = (threeEditor) => {
-	window.threeEditor = threeEditor
 }
 
 const loadImgUrl = () => {
@@ -143,12 +145,12 @@ const loadImgUrl = () => {
 }
 
 const createImagePlane = (imageUrl) => {
-	if (!threeEditor) {
+	if (!window.threeEditor) {
 		ElMessage.error('编辑器未初始化')
 		return
 	}
 
-	const { viewer } = threeEditor
+	const { viewer } = window.threeEditor
 	const textureLoader = new THREE.TextureLoader()
 
 	textureLoader.load(
@@ -200,33 +202,45 @@ const handleRemove = () => {
 }
 
 const openPanel = () => {
-	threeEditor.openControlPanel()
+	window.threeEditor.openControlPanel()
 }
 
 const exportTemplateJson = () => {
-	if (!threeEditor) return ElMessage.error('没有可导出的场景')
-	// const blob = new Blob([JSON.stringify(threeEditor.saveSceneEditor())], { type: 'application/json' })
-	// const link = document.createElement('a')
-	// link.href = URL.createObjectURL(blob)
-	// // link.download = (dataCores.sceneName || '场景') + '.json'
-	// link.download = '场景.json'
-	// link.click()
+	if (!window.threeEditor) return ElMessage.error('没有可导出的场景')
+	try {
+		const sceneData = window.threeEditor.saveSceneEditor()
+		const jsonString = JSON.stringify(sceneData, null, 2)
+		const blob = new Blob([jsonString], { type: 'application/json' })
+		const link = document.createElement('a')
+		link.href = URL.createObjectURL(blob)
+		link.download = (dataCores.sceneName || '场景') + '.json'
+		link.click()
+		setTimeout(() => URL.revokeObjectURL(link.href), 100)
+		ElMessage.success('场景导出成功')
+	} catch (error) {
+		ElMessage.error('导出场景失败: ' + error.message)
+	}
 }
 
 const pict = () => {
-	const base64 = threeEditor.getSceneEditorImage(['image/png', '0.8'])
-	const link = document.createElement('a')
-	link.href = base64
-	// link.download = (dataCores.sceneName || '场景') + '.png'
-	link.download = '场景.png'
-	link.click()
+	if (!window.threeEditor) return ElMessage.error('没有可下载的场景')
+	try {
+		const base64 = window.threeEditor.getSceneEditorImage(['image/png', '0.8'])
+		const link = document.createElement('a')
+		link.href = base64
+		link.download = (dataCores.sceneName || '场景') + '.png'
+		link.click()
+		ElMessage.success('下载成功')
+	} catch (error) {
+		ElMessage.error('下载场景失败: ' + error.message)
+	}
 }
 
 const saveScene = () => {
+	if (!window.threeEditor) return ElMessage.error('没有可保存的场景')
 	try {
-		// if (dataCores.options.find(item => item.name === dataCores.sceneName)) localStorage.setItem(dataCores.sceneName + '-newEditor', JSON.stringify(threeEditor.saveSceneEdit()))
-		// else dataCores.sceneName = ''
-		threeEditor.saveSceneEditor()
+		if (dataCores.options.find((item) => item.name === dataCores.sceneName)) localStorage.setItem(dataCores.sceneName + '-newEditor', JSON.stringify(window.threeEditor.saveSceneEditor()))
+		window.threeEditor.saveSceneEditor()
 		ElMessage.success('场景保存成功')
 		saveLocal()
 	} catch (error) {
@@ -388,6 +402,61 @@ const handleMouseDown = (e) => {
 
 	&.collapsed {
 		width: 0;
+	}
+}
+
+.center-panel {
+	flex: 1;
+	background-color: #1e1e1e;
+	position: relative;
+	width: 100%;
+}
+
+.top-toolbar {
+	position: absolute;
+	top: 20px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 4;
+	padding: 4px 10px;
+	border-radius: 8px;
+	border: 1px solid #404040;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	backdrop-filter: blur(5px);
+	transition: all 0.3s ease;
+	background-color: rgba(45, 45, 45, 0.95);
+
+	.divider {
+		width: 1px;
+		height: 24px;
+		background-color: #404040;
+	}
+
+	:deep(.el-checkbox__label) {
+		color: #e5eaf3;
+		font-size: 12px;
+	}
+
+	:deep(.el-radio-group) {
+		display: flex;
+	}
+
+	:deep(.el-radio-button__inner) {
+		display: flex;
+		align-items: center;
+		padding: 6px 10px;
+		font-size: 12px;
+		transition: all 0.2s ease;
+
+		&:hover {
+			background-color: #4a4a4a;
+		}
+
+		.el-icon {
+			margin-right: 4px;
+		}
 	}
 }
 
