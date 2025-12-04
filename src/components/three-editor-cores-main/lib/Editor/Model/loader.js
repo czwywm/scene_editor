@@ -5,17 +5,21 @@ export function loadModel(url, type, point, dracoPath, callback = () => { }) {
 
     switch (type) {
 
-        case 'GLTF':
+        case 'gltf':
 
             return loadGLTF(url, point, dracoPath, mesh => callback(mesh))
 
-        case 'FBX':
+        case 'fbx':
 
             return loadFBX(url, mesh => callback(mesh))
 
-        case 'OBJ':
+        case 'obj':
 
             return loadOBJ(url, mesh => callback(mesh))
+
+        case 'glb':
+
+            return loadGLTF(url, point, dracoPath, mesh => callback(mesh))
 
     }
 

@@ -180,7 +180,7 @@ export function loadFBX(url = '', callback) {
   return loaderService
 }
 
-/* gltf 模型 */
+/* gltf/glb 模型 */
 export function loadGLTF(url = '', point, dracoPath = '/draco/', callback = () => { }) {
   const loader = new GLTFLoader()
 

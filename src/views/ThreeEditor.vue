@@ -63,7 +63,7 @@ const createScene = () => {
 			sceneParams = tamplateJson.sceneParams || null
 			meshListParams = tamplateJson.meshListParams || null
 			skyParams = tamplateJson.skyParams || null
-			console.log('使用默认模板数据')
+			// console.log('使用默认模板数据')
 		}
 
 		threeEditor = new ThreeEditor({

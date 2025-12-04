@@ -51,15 +51,52 @@
 	</div>
 </template>
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, inject } from 'vue'
 import axios from 'axios'
 import * as THREE from 'three'
+import { ElMessage } from 'element-plus'
+import { ThreeEditor } from '../components/three-editor-cores-main/lib/main.js'
 
 const DEFAULT_CONFIG = window.DEFAULT_CONFIG || {}
 
-const data = reactive([])
+const listJ = window.editorJsons.map((v) => (__isProduction__ ? '/threejs-editor/' + v : '/' + v))
+
+// 导入外置组件
+const components = Object.values(
+	import.meta.glob('./compoents/*.js', {
+		eager: true,
+		import: 'default',
+	}),
+)
+
+// 加载组件到ThreeEditor.__DESIGNS__
+ThreeEditor.__DESIGNS__.unshift(...components)
+
+// 提取组件标签名
+const editor_components = components.map((v) => v.label || v.name)
+
+const data = reactive([
+	{
+		icon: 'set-up',
+		title: '配置案例',
+		list: listJ,
+	},
+	{
+		icon: 'office-building',
+		title: '模型',
+		list: window.models,
+	},
+	{
+		title: '组件',
+		icon: 'connection',
+		list: editor_components,
+	},
+])
 const active = ref('')
 const showList = ref([])
+// 从父组件获取加载进度状态
+const loadingProgress = inject('loadingProgress', ref(0))
+
 // 获取模型信息
 async function getModel() {
 	axios
@@ -122,13 +159,90 @@ function getItemDisplayName(item) {
 	return '-'
 }
 
-function clickLeft(v, point) {
-	threeEditor.setModelFromInfo({
-		type: 'GLTF',
-		name: v.modelname,
-		url: window.DEFAULT_CONFIG.BASE_URL + v.modelurl,
-		point: point || { x: 0, y: 0, z: 0 },
-	})
+const loadScene = (v) => {
+	// 重置加载进度
+	loadingProgress.value = 0
+
+	fetch(v)
+		.then((res) => {
+			// 检查响应是否成功
+			if (!res.ok) {
+				throw new Error(`HTTP错误! 状态码: ${res.status}`)
+			}
+			return res.json()
+		})
+		.then((res) => {
+			threeEditor?.resetEditorStorage(res)
+			ElMessage.success('场景加载成功')
+		})
+		.catch((error) => {
+			console.error('场景加载失败:', error)
+			ElMessage.error('场景加载失败: ' + error.message)
+		})
+}
+
+async function clickLeft(v, point) {
+	if (active.value === '配置案例') {
+		console.log('v', v)
+		// 检查是否有正在加载的内容
+		if (loadingProgress.value !== 0) {
+			ElMessage.warning('请先完成当前加载')
+			return
+		}
+		loadScene(v)
+	} else if (active.value === '模型') {
+		if (loadingProgress.value !== 0) {
+			ElMessage.warning('请先完成当前加载')
+			return
+		}
+		// 重置加载进度
+		loadingProgress.value = 0
+		let a = v.split('/')
+		a = a[a.length - 1].split('.')
+		let modelInfo = {
+			type: a[1],
+			name: a[0],
+			url: v,
+			point: point || { x: 0, y: 0, z: 0 },
+		}
+
+		// 获取加载服务并监听进度
+		const { loaderService } = threeEditor.setModelFromInfo(modelInfo)
+
+		// 监听加载进度
+		loaderService.progress = (progress, xhr) => {
+			loadingProgress.value = Math.round(progress * 100)
+		}
+
+		// 监听加载完成
+		loaderService.complete = () => {
+			loadingProgress.value = 0
+		}
+	} else if (active.value === '组件') {
+		const design = ThreeEditor.__DESIGNS__.find((d) => d.label === v)
+		if (!design) return
+		const mesh = await design.create(null, threeEditor.viewer)
+		if (!mesh) return
+		mesh.isDesignMesh = true
+		mesh.designType = design.name
+		threeEditor.viewer.scene.add(mesh)
+		if (point) mesh.position.copy(point)
+		const { maxView, target } = threeEditor.getObjectViews(mesh)
+		//检测是否存在maxView
+		if (maxView && maxView.x) {
+			threeEditor.createGsapAnimation(threeEditor.viewer.camera.position, maxView)
+			threeEditor.createGsapAnimation(threeEditor.viewer.controls.target, target)
+		}
+		threeEditor.viewer.transformControls.attach(mesh)
+	} else {
+		let modelInfo = {
+			type: 'gltf',
+			name: v.modelname,
+			url: window.DEFAULT_CONFIG.BASE_URL + v.modelurl,
+			point: point || { x: 0, y: 0, z: 0 },
+		}
+		threeEditor.setModelFromInfo(modelInfo)
+	}
 }
 const raycaster = new THREE.Raycaster()
 const mouse = new THREE.Vector2()

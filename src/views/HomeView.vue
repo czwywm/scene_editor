@@ -1,5 +1,9 @@
 <template>
 	<div v-show="!namePreviewScene" class="layout" @contextmenu.prevent="handleContextMenu" @touchmove.prevent="handleTouchMove" @mousedown="handleMouseDown">
+		<!-- 模型加载进度条 -->
+		<div v-if="loadingProgress > 0 && loadingProgress < 100" class="loading-progress">
+			<el-progress :percentage="loadingProgress" :stroke-width="8" :color="'#409EFF'" />
+		</div>
 		<div class="header" v-show="!previewScene">
 			<div class="header-box">
 				<div class="header-left">
@@ -95,7 +99,7 @@
 </template>
 
 <script setup>
-import { ref, watch, reactive } from 'vue'
+import { ref, watch, reactive, provide } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import * as THREE from 'three'
@@ -113,7 +117,11 @@ const imageUrl = ref(null)
 const sceneVisible = ref(false)
 const inputSceneName = ref('')
 const isRightMouseDown = ref(false)
+const loadingProgress = ref(0)
 let namePreviewScene = false
+
+// 提供加载进度状态给子组件
+provide('loadingProgress', loadingProgress)
 const dataCores = reactive({
 	sceneName: localStorage.getItem('new_sceneName') || '三维测试',
 	options: JSON.parse(localStorage.getItem('new_sceneList')) || [{ name: '三维测试' }],
@@ -317,6 +325,19 @@ const handleMouseDown = (e) => {
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
+	position: relative;
+
+	.loading-progress {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 300px;
+		z-index: 1000;
+		background-color: rgba(0, 0, 0, 0.7);
+		padding: 20px;
+		border-radius: 8px;
+	}
 }
 
 .header {

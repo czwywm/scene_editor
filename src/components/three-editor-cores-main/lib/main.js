@@ -24,6 +24,12 @@ export { createSkySphereShader, createScanPlane, createOneHeatMap } from './Edit
 export { getLight } from './Editor/Basic/Light/LightChunk'
 
 export class ThreeEditor {
+	// GLSL着色器库
+	static __GLSLLIB__ = []
+
+	// 设计组件库
+	static __DESIGNS__ = []
+
 	constructor(params) {
 
 		// 初始化场景
@@ -143,6 +149,15 @@ export class ThreeEditor {
 		sceneClick(event, this.viewer, (e) => callback(e))
 	}
 
+	// 移除更新监听器
+	removeUpdateListener(callback) {
+		// 从CommonFrameList中移除指定的回调函数
+		const index = this.viewer.CommonFrameList.findIndex(item => item.frameAnimationRender === callback);
+		if (index > -1) {
+			this.viewer.CommonFrameList.splice(index, 1);
+		}
+	}
+
 	// 未加工的点击事件
 	getRawSceneEvent() {
 		return rawSceneClick(this.viewer)
@@ -192,6 +207,49 @@ export class ThreeEditor {
 		this.viewer.Composer.render()
 
 		return this.viewer.renderer.domElement.toDataURL(...params)
+	}
+
+	// 重置编辑器存储
+	resetEditorStorage(data) {
+		// 实现场景数据的重置逻辑
+		if (!data) return
+
+		// 清空现有场景
+		while (this.viewer.scene.children.length > 0) {
+			const child = this.viewer.scene.children[0]
+			this.viewer.scene.remove(child)
+		}
+
+		// 重新加载场景参数
+		if (data.scene) {
+			// 设置场景背景
+			if (data.scene.backgroundUrls) {
+				this.setSky(data.scene.backgroundUrls)
+			}
+
+			// 设置环境贴图
+			if (data.scene.envBackgroundUrls) {
+				this.setGlobalEnvBackground(data.scene.envBackgroundUrls)
+			}
+		}
+
+		// 重新加载模型
+		if (data.modelCores && Array.isArray(data.modelCores)) {
+			data.modelCores.forEach((modelCore) => {
+				this.setModelFromInfo({
+					type: modelCore.type || 'gltf',
+					url: modelCore.url,
+					name: modelCore.name,
+					point: modelCore.position || { x: 0, y: 0, z: 0 }
+				})
+			})
+		}
+
+		// 重新加载其他类型的核心组件
+		// 如lightCores、innerCores、drawCores、textCores、particleCores等
+		// ...
+
+		console.log('编辑器存储已重置', data)
 	}
 
 	// 设置场景控制模式
@@ -286,9 +344,15 @@ export class ThreeEditor {
 			y: maxView.y,
 			z: maxView.z,
 			ease: "power2.inOut",
-			onComplete: function () {
-				console.log("Camera animation completed");
-			}
+			onComplete: function () { }
+		});
+	}
+
+	// 添加更新监听器
+	addUpdateListener(callback) {
+		// 将回调函数添加到CommonFrameList中，以便在渲染循环中执行
+		this.viewer.CommonFrameList.push({
+			frameAnimationRender: callback
 		});
 	}
 }

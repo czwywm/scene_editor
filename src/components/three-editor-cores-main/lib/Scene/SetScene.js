@@ -5,115 +5,133 @@ import { initSceneEditor } from '../Editor/Editor.js'
 /* 初始化场景 */
 export function initScene(DOM, initParams, sceneParams, saveScene) {
 
-    // 创建场景
-    const scene = createScene()
+	// 创建场景
+	const scene = createScene()
 
-    // 创建相机
-    const camera = setCamera(scene, DOM)
+	// 创建相机
+	const camera = setCamera(scene, DOM)
 
-    // 渲染场景
-    const renderer = setRenderer(initParams, DOM)
+	// 渲染场景
+	const renderer = setRenderer(initParams, DOM)
 
-    // 轨道控制
-    const controls = setControls(camera, renderer)
+	// 轨道控制
+	const controls = setControls(camera, renderer)
 
-    // 变换控制
-    const transformControls = setTransformControls(scene, camera, renderer, controls)
+	// 变换控制
+	const transformControls = setTransformControls(scene, camera, renderer, controls)
 
-    // 后期渲染
-    const { Composer } = setEffectComposer(scene, camera, renderer, DOM)
+	// 后期渲染
+	const { Composer } = setEffectComposer(scene, camera, renderer, DOM)
 
-    // Css3DOM
-    const { Css3Render, CSS3DObject } = setCss3DRenderer(DOM)
+	// Css3DOM
+	const { Css3Render, CSS3DObject } = setCss3DRenderer(DOM)
 
-    // Css2DOM
-    const { CssRender, CSS2DObject } = setCss2DRenderer(DOM)
+	// Css2DOM
+	const { CssRender, CSS2DObject } = setCss2DRenderer(DOM)
 
-    // 模型动画
-    const MixerList = []
+	// 模型动画
+	const MixerList = []
 
-    // 着色动画
-    const ShaderList = []
+	// 着色动画
+	const ShaderList = []
 
-    // 公共动画
-    const CommonFrameList = []
+	// 公共动画
+	const CommonFrameList = []
 
-    // 性能监控
-    const Stats = setStats(DOM)
+	// 为场景添加更新监听器方法
+	scene.addUpdateListener = function (callback) {
+		this.CommonFrameList.push({
+			frameAnimationRender: callback
+		});
+	};
 
-    // 控制面板
-    const args = initSceneEditor(scene, camera, renderer, controls, transformControls, Composer, MixerList, ShaderList, CommonFrameList, Stats, DOM, { ...sceneParams }, (sceneParams, meshListParams) => saveScene(sceneParams, meshListParams), initParams.userPermissions)
+	// 为场景添加移除更新监听器方法
+	scene.removeUpdateListener = function (callback) {
+		const index = this.CommonFrameList.findIndex(item => item.frameAnimationRender === callback);
+		if (index > -1) {
+			this.CommonFrameList.splice(index, 1);
+		}
+	};
 
-    // 帧率控制
-    const renderFps = setFpsClock(initParams.fps)
+	// 将CommonFrameList添加到scene对象中，以便外部访问
+	scene.CommonFrameList = CommonFrameList
 
-    // 渲染id
-    let RENDER_ID = null
+	// 性能监控
+	const Stats = setStats(DOM)
 
-    // 渲染
-    render()
+	// 控制面板
+	const args = initSceneEditor(scene, camera, renderer, controls, transformControls, Composer, MixerList, ShaderList, CommonFrameList, Stats, DOM, { ...sceneParams }, (sceneParams, meshListParams) => saveScene(sceneParams, meshListParams), initParams.userPermissions)
 
-    // 窗口变化
-    function renderSceneResize() {
+	// 帧率控制
+	const renderFps = setFpsClock(initParams.fps)
 
-        camera.aspect = DOM.clientWidth / DOM.clientHeight
+	// 渲染id
+	let RENDER_ID = null
 
-        camera.updateProjectionMatrix()
+	// 渲染
+	render()
 
-        renderer.setSize(DOM.clientWidth, DOM.clientHeight)
+	// 窗口变化
+	function renderSceneResize() {
 
-        Composer.resize()
+		camera.aspect = DOM.clientWidth / DOM.clientHeight
 
-        ShaderList.forEach(shaderMesh => shaderMesh.uniforms.iResolution && (shaderMesh.uniforms.iResolution.value = new THREE.Vector2(DOM.clientWidth, DOM.clientHeight)))
+		camera.updateProjectionMatrix()
 
-        Css3Render.resize()
+		renderer.setSize(DOM.clientWidth, DOM.clientHeight)
 
-        CssRender.resize()
+		Composer.resize()
 
-    }
+		ShaderList.forEach(shaderMesh => shaderMesh.uniforms.iResolution && (shaderMesh.uniforms.iResolution.value = new THREE.Vector2(DOM.clientWidth, DOM.clientHeight)))
 
-    // 销毁场景
-    function destroySceneRender() {
+		Css3Render.resize()
 
-        cancelAnimationFrame(RENDER_ID)
+		CssRender.resize()
 
-        disposeScene(scene)
+	}
 
-        renderer.dispose()
+	// 销毁场景
+	function destroySceneRender() {
 
-        args.GUI?.destroy?.()
+		cancelAnimationFrame(RENDER_ID)
 
-        while (DOM.children.length) DOM.removeChild(DOM.firstChild)
+		disposeScene(scene)
 
-    }
+		renderer.dispose()
 
-    // 渲染函数
-    function render() {
+		args.GUI?.destroy?.()
 
-        renderFps(() => {
+		while (DOM.children.length) DOM.removeChild(DOM.firstChild)
 
-            Stats.update()  // 性能监控
+	}
 
-            controls.update() // 更新控制器
+	// 渲染函数
+	function render() {
 
-            MixerList.forEach(mixer => mixer.mixerRender()) // 模型动画
+		renderFps(() => {
 
-            ShaderList.forEach(shader => shader.ShaderAnimateRender()) //着色器动画
+			Stats.update()  // 性能监控
 
-            CommonFrameList.forEach(object => object.frameAnimationRender?.()) // 公共动画
+			controls.update() // 更新控制器
 
-            Composer.EffectComposerRender() // 后期渲染
+			MixerList.forEach(mixer => mixer.mixerRender()) // 模型动画
 
-            Css3Render.render(scene, camera) // Css3D渲染
+			ShaderList.forEach(shader => shader.ShaderAnimateRender()) //着色器动画
 
-            CssRender.render(scene, camera) // Css2D渲染
+			CommonFrameList.forEach(object => object.frameAnimationRender?.()) // 公共动画
 
-        })
+			Composer.EffectComposerRender() // 后期渲染
 
-        RENDER_ID = requestAnimationFrame(render)
+			Css3Render.render(scene, camera) // Css3D渲染
 
-    }
+			CssRender.render(scene, camera) // Css2D渲染
 
-    return { scene, camera, renderer, controls, transformControls, MixerList, ShaderList, CommonFrameList, Stats, Composer, CSS3DObject, CSS2DObject, renderSceneResize, destroySceneRender, ...args }
+		})
+
+		RENDER_ID = requestAnimationFrame(render)
+
+	}
+
+	return { scene, camera, renderer, controls, transformControls, MixerList, ShaderList, CommonFrameList, Stats, Composer, CSS3DObject, CSS2DObject, renderSceneResize, destroySceneRender, ...args }
 
 }
