@@ -3077,7 +3077,7 @@ let Q = class {
       r !== void 0 && parseFloat(r) < 1 && console.warn("THREE.Color: Alpha component of " + e + " will be ignored.");
     }
     let s;
-    if (s = /^(\w+)\(([^\)]*)\)/.exec(e)) {
+    if (s = /^(\w+)\(([^)]*)\)/.exec(e)) {
       let r;
       const a = s[1], o = s[2];
       switch (a) {
@@ -3090,7 +3090,7 @@ let Q = class {
               Math.min(255, parseInt(r[3], 10)) / 255,
               t
             );
-          if (r = /^\s*(\d+)\%\s*,\s*(\d+)\%\s*,\s*(\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(o))
+          if (r = /^\s*(\d+)%\s*,\s*(\d+)%\s*,\s*(\d+)%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(o))
             return n(r[4]), this.setRGB(
               Math.min(100, parseInt(r[1], 10)) / 100,
               Math.min(100, parseInt(r[2], 10)) / 100,
@@ -3100,7 +3100,7 @@ let Q = class {
           break;
         case "hsl":
         case "hsla":
-          if (r = /^\s*(\d*\.?\d+)\s*,\s*(\d*\.?\d+)\%\s*,\s*(\d*\.?\d+)\%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(o))
+          if (r = /^\s*(\d*\.?\d+)\s*,\s*(\d*\.?\d+)%\s*,\s*(\d*\.?\d+)%\s*(?:,\s*(\d*\.?\d+)\s*)?$/.exec(o))
             return n(r[4]), this.setHSL(
               parseFloat(r[1]) / 360,
               parseFloat(r[2]) / 100,
@@ -3111,7 +3111,7 @@ let Q = class {
         default:
           console.warn("THREE.Color: Unknown color model " + e);
       }
-    } else if (s = /^\#([A-Fa-f\d]+)$/.exec(e)) {
+    } else if (s = /^#([A-Fa-f\d]+)$/.exec(e)) {
       const r = s[1], a = r.length;
       if (a === 3)
         return this.setRGB(
@@ -18013,7 +18013,7 @@ class Pr {
     return t === -1 ? "./" : e.slice(0, t + 1);
   }
   static resolveURL(e, t) {
-    return typeof e != "string" || e === "" ? "" : (/^https?:\/\//i.test(t) && /^\//.test(e) && (t = t.replace(/(^https?:\/\/[^\/]+).*/i, "$1")), /^(https?:)?\/\//i.test(e) || /^data:.*,.*$/i.test(e) || /^blob:.*$/i.test(e) ? e : t + e);
+    return typeof e != "string" || e === "" ? "" : (/^https?:\/\//i.test(t) && e.startsWith('/') && (t = t.replace(/(^https?:\/\/[^/]+).*/i, "$1")), /^(https?:)?\/\//i.test(e) || /^data:.*,.*$/i.test(e) || /^blob:.*$/i.test(e) ? e : t + e);
   }
 }
 class _g extends Be {
@@ -18890,7 +18890,7 @@ class hM {
     }
   }
 }
-const xg = "\\[\\]\\.:\\/", O2 = new RegExp("[" + xg + "]", "g"), Mg = "[^" + xg + "]", N2 = "[^" + xg.replace("\\.", "") + "]", U2 = /* @__PURE__ */ /((?:WC+[\/:])*)/.source.replace("WC", Mg), F2 = /* @__PURE__ */ /(WCOD+)?/.source.replace("WCOD", N2), B2 = /* @__PURE__ */ /(?:\.(WC+)(?:\[(.+)\])?)?/.source.replace("WC", Mg), k2 = /* @__PURE__ */ /\.(WC+)(?:\[(.+)\])?/.source.replace("WC", Mg), z2 = new RegExp(
+const xg = "\\[\\]\\.:\\/", O2 = new RegExp("[" + xg + "]", "g"), Mg = "[^" + xg + "]", N2 = "[^" + xg.replace("\\.", "") + "]", U2 = /* @__PURE__ */ /((?:WC+[/:])*)/.source.replace("WC", Mg), F2 = /* @__PURE__ */ /(WCOD+)?/.source.replace("WCOD", N2), B2 = /* @__PURE__ */ /(?:\.(WC+)(?:\[(.+)\])?)?/.source.replace("WC", Mg), k2 = /* @__PURE__ */ /\.(WC+)(?:\[(.+)\])?/.source.replace("WC", Mg), z2 = new RegExp(
   "^" + U2 + F2 + B2 + k2 + "$"
 ), H2 = ["material", "materials", "bones", "map"];
 class G2 {
@@ -20987,7 +20987,7 @@ var Mi = {
 }, jh = function(e) {
   return Gt(e) || gn(e);
 }, yM = typeof ArrayBuffer == "function" && ArrayBuffer.isView || function() {
-}, Dn = Array.isArray, qp = /(?:-?\.?\d|\.)+/gi, xM = /[-+=.]*\d+[.e\-+]*\d*[e\-+]*\d*/g, yo = /[-+=.]*\d+[.e-]*\d*[a-z%]*/g, If = /[-+=.]*\d+\.?\d*(?:e-|e\+)?\d*/gi, MM = /[+-]=-?[.\d]+/, bM = /[^,'"\[\]\s]+/gi, dR = /^[+\-=e\s\d]*\d+[.\d]*([a-z]*|%)\s*$/i, Ot, rs, Yp, Cg, Si = {}, Ou = {}, SM, wM = function(e) {
+}, Dn = Array.isArray, qp = /(?:-?\.?\d|\.)+/gi, xM = /[-+=.]*\d+[.e\-+]*\d*[e\-+]*\d*/g, yo = /[-+=.]*\d+[.e-]*\d*[a-z%]*/g, If = /[-+=.]*\d+\.?\d*(?:e-|e\+)?\d*/gi, MM = /[+-]=-?[.\d]+/, bM = /[^,'"[\]\s]+/gi, dR = /^[+\-=e\s\d]*\d+[.\d]*([a-z]*|%)\s*$/i, Ot, rs, Yp, Cg, Si = {}, Ou = {}, SM, wM = function(e) {
   return (Ou = Yo(e, Si)) && ri;
 }, Rg = function(e, t) {
   return console.warn("Invalid property", e, "set to", t, "Missing plugin? gsap.registerPlugin()");
@@ -22548,7 +22548,7 @@ ut.Circ;
 */
 var Qv, dr, Po, Bg, va, Jv, kg, eP = function() {
   return typeof window < "u";
-}, qs = {}, ha = 180 / Math.PI, Lo = Math.PI / 180, lo = Math.atan2, e_ = 1e8, zg = /([A-Z])/g, tP = /(left|right|width|margin|padding|x)/i, nP = /[\s,\(]\S/, ds = {
+}, qs = {}, ha = 180 / Math.PI, Lo = Math.PI / 180, lo = Math.atan2, e_ = 1e8, zg = /([A-Z])/g, tP = /(left|right|width|margin|padding|x)/i, nP = /[\s,(]\S/, ds = {
   autoAlpha: "opacity,visibility",
   scale: "scaleX,scaleY",
   alpha: "opacity"
@@ -24427,7 +24427,7 @@ class jP {
   // parse "Property70"
   parseNodeSpecialProperty(e, t, n) {
     const s = n.split('",').map(function(h) {
-      return h.trim().replace(/^\"/, "").replace(/\s/, "_");
+      return h.trim().replace(/^"/, "").replace(/\s/, "_");
     }), r = s[0], a = s[1], o = s[2], l = s[3];
     let c = s[4];
     switch (a) {
@@ -25621,7 +25621,7 @@ function cm(i) {
   }
 }
 function L3(i) {
-  return i.search(/\.jpe?g($|\?)/i) > 0 || i.search(/^data\:image\/jpeg/) === 0 ? "image/jpeg" : i.search(/\.webp($|\?)/i) > 0 || i.search(/^data\:image\/webp/) === 0 ? "image/webp" : "image/png";
+  return i.search(/\.jpe?g($|\?)/i) > 0 || i.search(/^data:image\/jpeg/) === 0 ? "image/jpeg" : i.search(/\.webp($|\?)/i) > 0 || i.search(/^data:image\/webp/) === 0 ? "image/webp" : "image/png";
 }
 const I3 = new _e();
 class D3 {
@@ -30882,7 +30882,7 @@ const LL = {
   "us-in": { to_meter: 0.025400050800101 },
   "us-yd": { to_meter: 0.914401828803658 }
 };
-var X_ = /[\s_\-\/\(\)]/g;
+var X_ = /[\s_\-/()]/g;
 function Dr(i, e) {
   if (i[e])
     return i[e];
@@ -30999,7 +30999,7 @@ function um(i) {
     s = t[n], n in a ? (r = a[n], typeof r == "function" ? r(s) : e[r] = s) : e[n] = s;
   return typeof e.datumCode == "string" && e.datumCode !== "WGS84" && (e.datumCode = e.datumCode.toLowerCase()), e;
 }
-var Tc = 1, Ob = 2, Nb = 3, Gu = 4, Ub = 5, Wg = -1, IL = /\s/, DL = /[A-Za-z]/, OL = /[A-Za-z84_]/, Gd = /[,\]]/, Fb = /[\d\.E\-\+]/;
+var Tc = 1, Ob = 2, Nb = 3, Gu = 4, Ub = 5, Wg = -1, IL = /\s/, DL = /[A-Za-z]/, OL = /[A-Za-z84_]/, Gd = /[,\]]/, Fb = /[\d.E\-+]/;
 function Zs(i) {
   if (typeof i != "string")
     throw new Error("not a string");
@@ -31237,7 +31237,7 @@ function kL(i) {
   }
   i.UNIT && (i.units = i.UNIT.name.toLowerCase(), i.units === "metre" && (i.units = "meter"), i.UNIT.convert && (i.type === "GEOGCS" ? i.DATUM && i.DATUM.SPHEROID && (i.to_meter = i.UNIT.convert * i.DATUM.SPHEROID.a) : i.to_meter = i.UNIT.convert));
   var a = i.GEOGCS;
-  i.type === "GEOGCS" && (a = i), a && (a.DATUM ? i.datumCode = a.DATUM.name.toLowerCase() : i.datumCode = a.name.toLowerCase(), i.datumCode.slice(0, 2) === "d_" && (i.datumCode = i.datumCode.slice(2)), i.datumCode === "new_zealand_1949" && (i.datumCode = "nzgd49"), (i.datumCode === "wgs_1984" || i.datumCode === "world_geodetic_system_1984") && (i.PROJECTION === "Mercator_Auxiliary_Sphere" && (i.sphere = !0), i.datumCode = "wgs84"), i.datumCode === "belge_1972" && (i.datumCode = "rnb72"), a.DATUM && a.DATUM.SPHEROID && (i.ellps = a.DATUM.SPHEROID.name.replace("_19", "").replace(/[Cc]larke\_18/, "clrk"), i.ellps.toLowerCase().slice(0, 13) === "international" && (i.ellps = "intl"), i.a = a.DATUM.SPHEROID.a, i.rf = parseFloat(a.DATUM.SPHEROID.rf, 10)), a.DATUM && a.DATUM.TOWGS84 && (i.datum_params = a.DATUM.TOWGS84), ~i.datumCode.indexOf("osgb_1936") && (i.datumCode = "osgb36"), ~i.datumCode.indexOf("osni_1952") && (i.datumCode = "osni52"), (~i.datumCode.indexOf("tm65") || ~i.datumCode.indexOf("geodetic_datum_of_1965")) && (i.datumCode = "ire65"), i.datumCode === "ch1903+" && (i.datumCode = "ch1903"), ~i.datumCode.indexOf("israel") && (i.datumCode = "isr93")), i.b && !isFinite(i.b) && (i.b = i.a);
+  i.type === "GEOGCS" && (a = i), a && (a.DATUM ? i.datumCode = a.DATUM.name.toLowerCase() : i.datumCode = a.name.toLowerCase(), i.datumCode.slice(0, 2) === "d_" && (i.datumCode = i.datumCode.slice(2)), i.datumCode === "new_zealand_1949" && (i.datumCode = "nzgd49"), (i.datumCode === "wgs_1984" || i.datumCode === "world_geodetic_system_1984") && (i.PROJECTION === "Mercator_Auxiliary_Sphere" && (i.sphere = !0), i.datumCode = "wgs84"), i.datumCode === "belge_1972" && (i.datumCode = "rnb72"), a.DATUM && a.DATUM.SPHEROID && (i.ellps = a.DATUM.SPHEROID.name.replace("_19", "").replace(/[Cc]larke_18/, "clrk"), i.ellps.toLowerCase().slice(0, 13) === "international" && (i.ellps = "intl"), i.a = a.DATUM.SPHEROID.a, i.rf = parseFloat(a.DATUM.SPHEROID.rf, 10)), a.DATUM && a.DATUM.TOWGS84 && (i.datum_params = a.DATUM.TOWGS84), ~i.datumCode.indexOf("osgb_1936") && (i.datumCode = "osgb36"), ~i.datumCode.indexOf("osni_1952") && (i.datumCode = "osni52"), (~i.datumCode.indexOf("tm65") || ~i.datumCode.indexOf("geodetic_datum_of_1965")) && (i.datumCode = "ire65"), i.datumCode === "ch1903+" && (i.datumCode = "ch1903"), ~i.datumCode.indexOf("israel") && (i.datumCode = "isr93")), i.b && !isFinite(i.b) && (i.b = i.a);
   function o(h) {
     var u = i.to_meter || 1;
     return h * u;

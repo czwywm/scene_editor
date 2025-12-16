@@ -7,15 +7,15 @@ import path from 'path'
 
 
 export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url)),
-      three: path.resolve(__dirname, 'node_modules/three'),
-    },
-  },
-  base: './',
-  define: {
-    __isProduction__: process.env.NODE_ENV === 'production',
-  },
+	plugins: [vue()],
+	resolve: {
+		alias: {
+			'@': fileURLToPath(new URL('./src', import.meta.url)),
+			three: path.resolve(__dirname, 'node_modules/three'),
+		},
+	},
+	base: './',
+	define: {
+		__isProduction__: process.env.NODE_ENV === 'production',
+	},
 })

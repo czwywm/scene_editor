@@ -165,6 +165,7 @@ const loadScene = (v) => {
 
 	fetch(v)
 		.then((res) => {
+			console.log('res', res)
 			// 检查响应是否成功
 			if (!res.ok) {
 				throw new Error(`HTTP错误! 状态码: ${res.status}`)

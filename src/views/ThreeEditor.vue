@@ -207,7 +207,7 @@ const handleResize = () => {
 
 // 组件挂载
 onMounted(() => {
-	ThreeEditor.dracoPath = '/draco/'
+	ThreeEditor.dracoPath = './draco/'
 	createScene()
 	window.addEventListener('resize', handleResize)
 })
