@@ -7,189 +7,195 @@ import { setGroupAnimationStorage, setGroupAnimationPanel } from '../Model/Anima
 /* 处理 group */
 export function resolveGroup(group) {
 
-    // 全局控制
-    group.globalConfig = {
+	// 全局控制
+	group.globalConfig = {
 
-        useGlobalConfig: false,
+		useGlobalConfig: false,
 
-        isSaveChildren: true,
+		isSaveChildren: true,
 
-        isSaveMaterials: true,
+		isSaveMaterials: true,
 
-        mesh: {
+		mesh: {
 
-            castShadow: false,
+			castShadow: false,
 
-            receiveShadow: false,
+			receiveShadow: false,
 
-        },
+		},
 
-        material: {
+		material: {
 
-            envMap: false,
+			envMap: false,
 
-            envMapIntensity: 1,
+			envMapIntensity: 1,
 
-            reflectivity: 0.98,
+			reflectivity: 0.98,
 
-            isGlobalMap: true
+			isGlobalMap: true
 
-        },
+		},
 
-        geometry: {
+		geometry: {
 
-        }
+		}
 
-    }
+	}
 
-    // 材质
-    group.RootMaterials = getMaterials(group)
+	// 材质
+	group.RootMaterials = getMaterials(group)
 
-    // 动画
-    if (group.animations?.length > 0) {
+	// 动画
+	if (group.animations?.length > 0) {
 
-        group.animationPlayParams = {
+		group.animationPlayParams = {
 
-            initPlay: false,
+			initPlay: false,
 
-            speed: 0.5,
+			speed: 0.5,
 
-            actionIndexs: new Array(group.animations.length).fill(false),
+			actionIndexs: new Array(group.animations.length).fill(false),
 
-            startTime: 0,
+			startTime: 0,
 
-            loop: false,
+			loop: false,
 
-            frameCallback: () => { }
+			frameCallback: () => { }
 
-        }
+		}
 
-    }
+	}
 
-    return group
+	return group
 
 }
 
 /* 获取存储 */
 export function getGroupStorage(group) {
 
-    const { animationPlayParams, children, RootMaterials, rootInfo } = group
+	const { animationPlayParams, children, RootMaterials, rootInfo } = group
 
-    return {
+	return {
 
-        group: {
+		group: {
 
-            ...getMeshStorage(group),
+			...getMeshStorage(group),
 
-            globalConfig: group.globalConfig,
+			globalConfig: group.globalConfig,
 
-            animationPlayParams,
+			animationPlayParams,
 
-            RootMaterials: group.globalConfig.isSaveMaterials ? RootMaterials.map(m => getMiniMaterialStorage(m)) : undefined,
+			RootMaterials: group.globalConfig.isSaveMaterials ? RootMaterials.map(m => getMiniMaterialStorage(m)) : undefined,
 
-            children: group.globalConfig.isSaveChildren ? getMeshTreeStorage(children) : undefined,
+			children: group.globalConfig.isSaveChildren ? getMeshTreeStorage(children) : undefined,
 
-        },
+		},
 
-        rootInfo
+		rootInfo
 
-    }
+	}
 
 }
 
 /* 设置存储 */
 export function setGroupStorage(MixerList, group, storage) {
 
-    if (!storage) return
+	if (!storage) return
 
-    // 组项
-    setMeshStorage(group, storage)
+	// 组项
+	setMeshStorage(group, storage)
 
-    // 全局配置项
-    setGlobalStorage(group, storage.globalConfig)
+	// 全局配置项
+	setGlobalStorage(group, storage.globalConfig)
 
-    // 子项 Mesh
-    group.globalConfig.isSaveChildren && setMeshTreeStorage(group.children, storage.children)
+	// 子项 Mesh
+	group.globalConfig?.isSaveChildren && storage.children && Array.isArray(storage.children) && setMeshTreeStorage(group.children, storage.children)
 
-    // 子项 材质
-    group.globalConfig.isSaveMaterials && group.RootMaterials.forEach((i, index) => setMiniMaterialStorage(i, storage.RootMaterials[index]))
+	// 子项 材质
+	group.globalConfig?.isSaveMaterials && group.RootMaterials && storage.RootMaterials && Array.isArray(storage.RootMaterials) && group.RootMaterials.forEach((i, index) => {
+		if (storage.RootMaterials[index]) {
+			setMiniMaterialStorage(i, storage.RootMaterials[index]);
+		}
+	})
 
-    // 动画项
-    setGroupAnimationStorage(MixerList, group, storage.animationPlayParams)
+	// 动画项
+	setGroupAnimationStorage(MixerList, group, storage.animationPlayParams)
 
 }
 
 /* 控制面板 */
 export function setGroupPanel(controls, transformControls, Composer, MixerList, group, folder) {
 
-    setMeshPanel(group, folder.addFolder('物体控制'))
+	setMeshPanel(group, folder.addFolder('物体控制'))
 
-    setGroupGlobalPanel(group, folder.addFolder('全局和子项控制'))
+	setGroupGlobalPanel(group, folder.addFolder('全局和子项控制'))
 
-    setGroupAnimationPanel(MixerList, group, folder.addFolder('动画配置'))
+	setGroupAnimationPanel(MixerList, group, folder.addFolder('动画配置'))
 
-    folder.add({ fn: () => transformControls.attach(group) }, 'fn').name('选中')
+	folder.add({ fn: () => transformControls.attach(group) }, 'fn').name('选中')
 
-    folder.add({
+	folder.add({
 
-        focus: () => {
+		focus: () => {
 
-            const { position, target } = getBestViewTarget(group)
+			const { position, target } = getBestViewTarget(group)
 
-            createGsap(controls.object.position, position)
+			createGsap(controls.object.position, position)
 
-            createGsap(controls.target, target)
+			createGsap(controls.target, target)
 
-            transformControls.attach(group)
+			transformControls.attach(group)
 
-            Composer.effectPass.outlinePass.selectedObjects = [group]
+			Composer.effectPass.outlinePass.selectedObjects = [group]
 
-        }
+		}
 
-    }, 'focus').name('定位物体')
+	}, 'focus').name('定位物体')
 
-    folder.add({
+	folder.add({
 
-        delete: () => {
+		delete: () => {
 
-            transformControls.detach()
+			transformControls.detach()
 
-            group.parent.remove(group)
+			group.parent.remove(group)
 
-            folder.parent.removeFolder(folder)
+			folder.parent.removeFolder(folder)
 
-        }
+		}
 
-    }, 'delete').name('删除')
+	}, 'delete').name('删除')
 
 }
 
 /* 子项 存储 */
 export function getMeshTreeStorage(List) {
 
-    return List.map(i => {
+	return List.map(i => {
 
-        return {
+		return {
 
-            ...getMeshStorage(i),
+			...getMeshStorage(i),
 
-            children: getMeshTreeStorage(i.children)
+			children: getMeshTreeStorage(i.children)
 
-        }
+		}
 
-    })
+	})
 
 }
 
 /* setMeshTreeStorage */
 export function setMeshTreeStorage(List, storage) {
+	if (!storage || !Array.isArray(storage)) return;
 
-    List.forEach((i, index) => {
+	List.forEach((i, index) => {
+		if (storage[index]) {
+			setMeshStorage(i, storage[index]);
 
-        setMeshStorage(i, storage[index])
-
-        i.children && setMeshTreeStorage(i.children, storage[index].children)
-
-    })
-
+			if (i.children && storage[index].children && Array.isArray(storage[index].children)) {
+				setMeshTreeStorage(i.children, storage[index].children);
+			}
+		}
+	});
 }

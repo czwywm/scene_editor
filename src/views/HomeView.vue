@@ -24,6 +24,7 @@
 						</el-option>
 					</el-select>
 					<el-button class="btn-add" link icon="plus" @click="sceneVisible = true">新建场景</el-button>
+					<el-button class="btn-add" link icon="Upload" @click="importSceneVisible = true">导入场景</el-button>
 					<el-dialog v-model="sceneVisible" title="命名场景" width="500">
 						<el-input v-model="inputSceneName" placeholder="请输入场景名称" />
 						<template #footer>
@@ -33,9 +34,32 @@
 							</div>
 						</template>
 					</el-dialog>
+					<el-dialog v-model="importSceneVisible" title="导入场景" width="500">
+						<el-input v-model="importSceneName" placeholder="请输入导入场景的名称" />
+						<el-upload class="upload-demo" drag action="" :http-request="handleImportScene" :before-upload="beforeUploadScene" :show-file-list="true" :limit="1">
+							<div class="upload-area">
+								<div class="upload-placeholder">
+									<el-icon class="el-icon--upload"><upload-filled /></el-icon>
+									<div class="el-upload__text">
+										将场景JSON文件拖拽到此处或者
+										<em>点击上传</em>
+									</div>
+								</div>
+							</div>
+							<template #tip>
+								<div class="el-upload__tip">支持JSON格式文件，且不超过2MB</div>
+							</template>
+						</el-upload>
+						<template #footer>
+							<div class="dialog-footer">
+								<el-button @click="importSceneVisible = false">取消</el-button>
+								<el-button type="primary" @click="confirmImportScene" :disabled="!importedSceneData">确认导入</el-button>
+							</div>
+						</template>
+					</el-dialog>
 					<el-button class="btn-add" link icon="Upload" @click="imgVisible = true">导入图片</el-button>
 					<el-dialog v-model="imgVisible" title="上传图片" width="500">
-						<el-upload class="upload-demo" drag :action="DEFAULT_CONFIG.BASE_URL + 'api/common/1.0/uploadFile'" :before-upload="beforeUpload" :on-success="handleSuccess" :on-remove="handleRemove" :limit="1" :show-file-list="true" :data="{ dir: `${DEFAULT_CONFIG.BASE_NAME}/file` }">
+						<el-upload class="upload-demo" drag :action="DEFAULT_CONFIG.BASE_URL + 'api/common/1.0/uploadFile'" :before-upload="beforeUploadImage" :on-success="handleImageSuccess" :on-remove="handleImageRemove" :limit="1" :show-file-list="true" :data="{ dir: `${DEFAULT_CONFIG.BASE_NAME}/file` }">
 							<div class="upload-area">
 								<img v-if="imageUrl" :src="DEFAULT_CONFIG.BASE_URL + imageUrl" class="avatar cover-image" />
 								<div v-else class="upload-placeholder">
@@ -115,6 +139,9 @@ const rightCollapsed = ref(false)
 const imgVisible = ref(false)
 const imageUrl = ref(null)
 const sceneVisible = ref(false)
+const importSceneVisible = ref(false)
+const importSceneName = ref('')
+const importedSceneData = ref(null)
 const inputSceneName = ref('')
 const isRightMouseDown = ref(false)
 const loadingProgress = ref(0)
@@ -189,7 +216,8 @@ const createImagePlane = (imageUrl) => {
 	)
 }
 
-const beforeUpload = (rawFile) => {
+// 图片上传处理函数
+const beforeUploadImage = (rawFile) => {
 	if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png' && rawFile.type !== 'image/jpg') {
 		ElMessage.error('请上传JPG/JPEG/PNG格式的文件!')
 		return false
@@ -200,13 +228,383 @@ const beforeUpload = (rawFile) => {
 	return true
 }
 
-const handleSuccess = (response, uploadFile) => {
+const handleImageSuccess = (response, uploadFile) => {
 	imageUrl.value = response.url || uploadFile.response?.url
 	ElMessage.success('图片上传成功')
 }
 
-const handleRemove = () => {
+const handleImageRemove = () => {
 	imageUrl.value = null
+}
+
+// 场景数据验证函数：验证scene.json格式的数据是否符合要求
+const validateSceneJsonData = (sceneData) => {
+	try {
+		if (!sceneData || typeof sceneData !== 'object') {
+			throw new Error('场景数据必须是一个对象')
+		}
+
+		// 如果是模型数组，验证每个模型
+		if (Array.isArray(sceneData)) {
+			sceneData.forEach((model, index) => {
+				validateModel(model, index + 1)
+			})
+		}
+		// 如果是完整的scene.json格式，验证models数组
+		else if (sceneData.models && Array.isArray(sceneData.models)) {
+			sceneData.models.forEach((model, index) => {
+				validateModel(model, index + 1)
+			})
+		}
+		// 如果是单个模型对象，直接验证
+		// 支持顶层属性或userData中的属性
+		else if ((sceneData.drawingPoints && sceneData.modelType) || (sceneData.userData && sceneData.userData.drawingPoints && sceneData.userData.modelType)) {
+			validateModel(sceneData, 1)
+		} else {
+			throw new Error('场景数据必须是模型数组、包含models数组的对象或单个模型对象')
+		}
+
+		return true
+	} catch (error) {
+		console.error('场景数据验证失败:', error)
+		ElMessage.error('场景数据验证失败: ' + error.message)
+		throw error
+	}
+}
+
+// 验证单个模型
+const validateModel = (model, index) => {
+	if (!model) {
+		throw new Error(`模型${index}不能为空`)
+	}
+
+	// 验证drawingPoints - 支持顶层或userData内部
+	let drawingPoints = model.drawingPoints
+	// 如果顶层没有drawingPoints，尝试从userData中获取
+	if (!drawingPoints && model.userData && model.userData.drawingPoints) {
+		drawingPoints = model.userData.drawingPoints
+	}
+
+	if (!drawingPoints || !Array.isArray(drawingPoints) || drawingPoints.length < 1) {
+		throw new Error(`模型${index}缺少有效的drawingPoints`)
+	}
+
+	// 验证每个点的坐标
+	drawingPoints.forEach((point, pointIndex) => {
+		if (!point || typeof point.x !== 'number' || typeof point.y !== 'number' || typeof point.z !== 'number') {
+			throw new Error(`模型${index}的第${pointIndex + 1}个点坐标无效`)
+		}
+	})
+
+	// 验证modelType - 支持顶层或userData内部
+	let modelType = model.modelType
+	// 如果顶层没有modelType，尝试从userData中获取
+	if (!modelType && model.userData && model.userData.modelType) {
+		modelType = model.userData.modelType
+	}
+
+	// 只验证modelType存在即可，不限制具体取值
+	// 当modelType不是ground也不是wall时，按立方体绘制
+	if (!modelType) {
+		throw new Error(`模型${index}必须指定有效的modelType`)
+	}
+
+	// 为wall类型确保wallParams存在
+	if (modelType === 'wall' && model.userData) {
+		model.userData.wallParams = model.userData.wallParams || {
+			thickness: 0.2,
+			height: 2.5,
+		}
+	}
+}
+
+// 场景导入处理函数
+const beforeUploadScene = (rawFile) => {
+	if (rawFile.type !== 'application/json' && !rawFile.name.endsWith('.json')) {
+		ElMessage.error('请上传JSON格式的文件!')
+		return false
+	} else if (rawFile.size / 1024 / 1024 > 2) {
+		ElMessage.error('文件大小不能超过2MB!')
+		return false
+	}
+	return true
+}
+
+const handleImportScene = (file) => {
+	const reader = new FileReader()
+	reader.onload = (e) => {
+		try {
+			const sceneData = JSON.parse(e.target.result)
+			importedSceneData.value = sceneData
+			ElMessage.success('场景文件读取成功')
+		} catch (error) {
+			ElMessage.error('场景文件解析失败: ' + error.message)
+			importedSceneData.value = null
+		}
+	}
+	reader.readAsText(file.file)
+}
+
+// 点击事件处理函数，dataset参数可选：如果提供数据集（scene.json格式的数据），则使用数据集生成场景；否则使用导入的scene.json文件
+// 注意：在模板中调用时，Vue会自动传递事件对象，所以我们需要检查第一个参数是否是事件对象
+const confirmImportScene = (eventOrDataset = null) => {
+	// 检查第一个参数是否是事件对象
+	let dataset = eventOrDataset
+	// 如果是事件对象，则忽略它
+	if (dataset && dataset instanceof Event) {
+		dataset = null
+	}
+	let sourceData = null
+	let isUsingDataset = false
+
+	// 如果提供了数据集（scene.json格式的数据），使用数据集作为数据源
+	if (dataset) {
+		try {
+			// 直接使用传入的scene.json格式数据
+			// 如果数据集是数组，说明是模型数组，需要包装成完整的scene.json格式
+			if (Array.isArray(dataset)) {
+				sourceData = {
+					models: dataset,
+				}
+			}
+			// 如果数据集是单个模型对象（包含drawingPoints和modelType，支持顶层或userData中的属性），包装成models数组
+			else if ((dataset.drawingPoints && dataset.modelType) || (dataset.userData && dataset.userData.drawingPoints && dataset.userData.modelType)) {
+				sourceData = {
+					models: [dataset],
+				}
+			}
+			// 否则认为是完整的scene.json格式
+			else {
+				sourceData = dataset
+			}
+
+			// 验证场景数据格式
+			validateSceneJsonData(sourceData)
+			isUsingDataset = true
+		} catch (error) {
+			ElMessage.error('数据集处理失败: ' + error.message)
+			return
+		}
+	} else {
+		// 否则使用原来的文件导入数据
+		if (!importedSceneData.value) {
+			ElMessage.error('请先选择有效的场景文件或提供数据集')
+			return
+		}
+
+		// 处理上传的文件数据
+		const fileData = importedSceneData.value
+
+		// 如果是单个模型对象（包含drawingPoints和modelType，支持顶层或userData中的属性），包装成models数组
+		if ((fileData.drawingPoints && fileData.modelType) || (fileData.userData && fileData.userData.drawingPoints && fileData.userData.modelType)) {
+			sourceData = {
+				models: [fileData],
+			}
+		} else {
+			sourceData = fileData
+		}
+
+		// 验证场景数据格式
+		validateSceneJsonData(sourceData)
+	}
+
+	if (!importSceneName.value.trim()) {
+		ElMessage.error('请输入场景名称')
+		return
+	}
+
+	if (dataCores.options.some((item) => item.name === importSceneName.value)) {
+		ElMessage.error('场景名称已存在')
+		return
+	}
+
+	try {
+		// 调试：验证数据源
+		console.log('=== 数据源 ===')
+		console.log('使用数据集:', isUsingDataset)
+		if (sourceData.models && Array.isArray(sourceData.models)) {
+			sourceData.models.forEach((model, index) => {
+				console.log(`模型${index + 1}: ${model.name}`)
+				console.log('modelType:', model.modelType)
+				console.log('drawingPoints数量:', model.drawingPoints?.length)
+			})
+		}
+
+		// 转换数据为系统可识别的格式
+		const sceneData = JSON.parse(JSON.stringify(sourceData))
+
+		// 调试：验证JSON序列化后的geometry
+		console.log('\n=== JSON序列化后的数据 ===')
+		if (sceneData.models && Array.isArray(sceneData.models)) {
+			sceneData.models.forEach((model, index) => {
+				console.log(`模型${index + 1}: ${model.name}`)
+				console.log('geometry存在:', !!model.geometry)
+				if (model.geometry) {
+					console.log('geometry.attributes存在:', !!model.geometry.attributes)
+					if (model.geometry.attributes) {
+						console.log('position.array长度:', model.geometry.attributes.position?.array?.length)
+					}
+				}
+			})
+		}
+
+		// 如果有models字段，将其转换为modelParams格式
+		if (sceneData.models && Array.isArray(sceneData.models)) {
+			// 创建modelParams数组
+			sceneData.modelParams = sceneData.models.map((model) => {
+				// 映射模型变换参数到group
+				const group = {
+					name: model.name,
+					visible: model.visible,
+					renderOrder: 0,
+					castShadow: model.castShadow || false,
+					receiveShadow: model.receiveShadow || false,
+					position: model.position,
+					rotation: model.rotation,
+					scale: model.scale,
+					transformAnimationList: null,
+					isSsr: false,
+					globalConfig: {
+						useGlobalConfig: false,
+						isSaveChildren: true,
+						isSaveMaterials: true,
+						mesh: {
+							castShadow: model.castShadow || false,
+							receiveShadow: model.receiveShadow || false,
+						},
+						material: {
+							envMap: false,
+							envMapIntensity: 1,
+							reflectivity: 0.98,
+							isGlobalMap: true,
+						},
+						geometry: {},
+					},
+					animationPlayParams: null,
+				}
+
+				// 映射模型元数据到rootInfo
+				// 获取drawingPoints（支持顶层或userData中的属性）
+				let drawingPoints = model.drawingPoints
+				if (!drawingPoints && model.userData && model.userData.drawingPoints) {
+					drawingPoints = model.userData.drawingPoints
+				}
+
+				// 获取modelType（支持顶层或userData中的属性）
+				let modelType = model.modelType
+				if (!modelType && model.userData && model.userData.modelType) {
+					modelType = model.userData.modelType
+				}
+
+				const rootInfo = {
+					id: model.id,
+					name: model.name,
+					type: 'custom', // 为自定义几何体设置一个类型标识
+					geometryType: model.geometryType,
+					geometry: model.geometry, // 包含几何体数据
+					material: model.material,
+					userData: model.userData,
+					drawingPoints: drawingPoints, // 添加drawingPoints
+					modelType: modelType, // 添加modelType
+					// 为了兼容loadModel函数的参数要求，添加必要的字段
+					url: '', // 自定义几何体不需要URL
+					point: model.position, // 位置信息
+					scale: model.scale, // 缩放信息
+					rotation: model.rotation, // 旋转信息
+				}
+
+				// 调试：验证映射后的rootInfo
+				console.log(`\n=== 映射后的模型${model.id} ===`)
+				console.log('rootInfo.geometry存在:', !!rootInfo.geometry)
+				if (rootInfo.geometry) {
+					console.log('rootInfo.geometry.attributes存在:', !!rootInfo.geometry.attributes)
+					if (rootInfo.geometry.attributes) {
+						console.log('rootInfo.position.array长度:', rootInfo.geometry.attributes.position?.array?.length)
+					}
+				}
+
+				return { group, rootInfo }
+			})
+		}
+
+		// 将转换后的场景数据保存到localStorage
+		localStorage.setItem(importSceneName.value + '-newEditor', JSON.stringify(sceneData))
+		// 添加到场景列表
+		dataCores.options.push({ name: importSceneName.value })
+		// 保存场景列表到localStorage
+		saveLocal()
+
+		// 生成并渲染场景
+		if (window.threeEditor) {
+			// 清空现有场景
+			while (window.threeEditor.viewer.scene.children.length > 0) {
+				const child = window.threeEditor.viewer.scene.children[0]
+				window.threeEditor.viewer.scene.remove(child)
+			}
+
+			// 重新加载场景参数
+			if (sceneData.scene) {
+				// 设置场景背景
+				if (sceneData.scene.backgroundUrls) {
+					window.threeEditor.setSky(sceneData.scene.backgroundUrls)
+				}
+
+				// 设置环境贴图
+				if (sceneData.scene.envBackgroundUrls) {
+					window.threeEditor.setGlobalEnvBackground(sceneData.scene.envBackgroundUrls)
+				}
+			}
+
+			// 重新加载模型
+			if (sceneData.models && Array.isArray(sceneData.models)) {
+				sceneData.models.forEach((model) => {
+					// 获取drawingPoints（支持顶层或userData中的属性）
+					let drawingPoints = model.drawingPoints
+					if (!drawingPoints && model.userData && model.userData.drawingPoints) {
+						drawingPoints = model.userData.drawingPoints
+					}
+
+					// 获取modelType（支持顶层或userData中的属性）
+					let modelType = model.modelType
+					if (!modelType && model.userData && model.userData.modelType) {
+						modelType = model.userData.modelType
+					}
+
+					// 检查是否包含drawingPoints，如果有则视为自定义几何体
+					if (drawingPoints && Array.isArray(drawingPoints)) {
+						// 自定义几何体类型
+						window.threeEditor.setModelFromInfo({
+							type: 'custom',
+							name: model.name,
+							position: model.position || { x: 0, y: 0, z: 0 },
+							geometryType: model.geometryType || 'Polygon',
+							drawingPoints: drawingPoints,
+							modelType: modelType,
+							material: model.material,
+							userData: model.userData,
+						})
+					} else {
+						// 传统模型类型
+						window.threeEditor.setModelFromInfo({
+							type: model.type || 'gltf',
+							url: model.url,
+							name: model.name,
+							point: model.position || { x: 0, y: 0, z: 0 },
+						})
+					}
+				})
+			}
+		}
+
+		ElMessage.success('场景导入成功: ' + importSceneName.value)
+		// 关闭对话框
+		importSceneVisible.value = false
+		// 清空导入数据
+		importedSceneData.value = null
+		importSceneName.value = ''
+	} catch (error) {
+		ElMessage.error('场景导入失败: ' + error.message)
+	}
 }
 
 const openPanel = () => {

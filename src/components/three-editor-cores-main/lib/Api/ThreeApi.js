@@ -34,1402 +34,1769 @@ import proj4 from 'proj4'
 
 /* 设置场景 */
 export function createScene() {
-  const scene = new THREE.Scene()
+	const scene = new THREE.Scene()
 
-  scene.EnvBackground = null
+	scene.EnvBackground = null
 
-  scene.environmentEnabled = false
+	scene.environmentEnabled = false
 
-  scene.envChangeUse = () =>
-    scene.environmentEnabled
-      ? (scene.environment = scene.EnvBackground)
-      : (scene.environment = null)
+	scene.envChangeUse = () =>
+		scene.environmentEnabled
+			? (scene.environment = scene.EnvBackground)
+			: (scene.environment = null)
 
-  scene.MeshEnvMapChangeUseList = []
+	scene.MeshEnvMapChangeUseList = []
 
-  scene.SsrMeshList = []
+	scene.SsrMeshList = []
 
-  return scene
+	return scene
 }
 
 /* 设置相机 */
 export function setCamera(scene, DOM) {
-  const camera = new THREE.PerspectiveCamera(50, DOM.clientWidth / DOM.clientHeight, 0.1, 100000)
+	const camera = new THREE.PerspectiveCamera(50, DOM.clientWidth / DOM.clientHeight, 0.1, 100000)
 
-  camera.position.set(10, 10, 10)
+	camera.position.set(10, 10, 10)
 
-  camera.name = 'PerspectiveCamera'
+	camera.name = 'PerspectiveCamera'
 
-  scene.add(camera)
+	scene.add(camera)
 
-  return camera
+	return camera
 }
 
 /* 设置渲染器 */
 export function setRenderer(initParams, DOM) {
-  const renderer = new THREE.WebGLRenderer(initParams.webglRenderParams)
+	const renderer = new THREE.WebGLRenderer(initParams.webglRenderParams)
 
-  renderer.setSize(DOM.clientWidth, DOM.clientHeight)
+	renderer.setSize(DOM.clientWidth, DOM.clientHeight)
 
-  renderer.setPixelRatio(initParams.pixelRatio)
+	renderer.setPixelRatio(initParams.pixelRatio)
 
-  DOM.appendChild(renderer.domElement)
+	DOM.appendChild(renderer.domElement)
 
-  return renderer
+	return renderer
 }
 
 /* 轨道控制 */
 export function setControls(camera, renderer) {
-  const controls = new OrbitControls(camera, renderer.domElement)
+	const controls = new OrbitControls(camera, renderer.domElement)
 
-  controls.enableDamping = true
+	controls.enableDamping = true
 
-  controls.dampingFactor = 0.05
+	controls.dampingFactor = 0.05
 
-  controls.minDistance = 1
+	controls.minDistance = 1
 
-  controls.maxDistance = 5000
+	controls.maxDistance = 5000
 
-  controls.minZoom = 1000
+	controls.minZoom = 1000
 
-  controls.maxPolarAngle = Math.PI
+	controls.maxPolarAngle = Math.PI
 
-  return controls
+	return controls
 }
 
 /* 根查找 */
 export function getRootModel(object) {
-  while (object.parent.type !== 'Scene') {
-    object = object.parent
-  }
+	while (object.parent.type !== 'Scene') {
+		object = object.parent
+	}
 
-  return object
+	return object
 }
 
 /* 小立方体 */
 export function setBoxGeometry(size = 1, color = 0xffffff) {
-  const g = new THREE.BoxGeometry(size, size, size)
+	const g = new THREE.BoxGeometry(size, size, size)
 
-  const m = new THREE.MeshBasicMaterial({ color })
+	const m = new THREE.MeshBasicMaterial({ color })
 
-  const mesh = new THREE.Mesh(g, m)
+	const mesh = new THREE.Mesh(g, m)
 
-  return mesh
+	return mesh
 }
 
 /* 设置背景 */
 export function setSceneBackground(scene, urls) {
-  const sceneTexture = new THREE.CubeTextureLoader().load(urls)
+	const sceneTexture = new THREE.CubeTextureLoader().load(urls)
 
-  scene.background = sceneTexture
+	scene.background = sceneTexture
 
-  scene.backgroundLoadCallback?.(sceneTexture)
+	scene.backgroundLoadCallback?.(sceneTexture)
 }
 
 /* 设置全集环境贴图资源 */
 export function setEnvBackground(scene, urls) {
-  const sceneEnvTexture = new THREE.CubeTextureLoader().load(urls)
+	const sceneEnvTexture = new THREE.CubeTextureLoader().load(urls)
 
-  let sceneEnvBackground = null
+	let sceneEnvBackground = null
 
-  Object.defineProperty(scene, 'EnvBackground', {
-    get: () => sceneEnvBackground,
+	Object.defineProperty(scene, 'EnvBackground', {
+		get: () => sceneEnvBackground,
 
-    set: (value) => {
-      sceneEnvBackground = value
+		set: (value) => {
+			sceneEnvBackground = value
 
-      scene.envChangeUse?.()
+			scene.envChangeUse?.()
 
-      scene?.MeshEnvMapChangeUseList.forEach((f) => f())
-    },
-  })
+			scene?.MeshEnvMapChangeUseList.forEach((f) => f())
+		},
+	})
 
-  scene.EnvBackground = sceneEnvTexture
+	scene.EnvBackground = sceneEnvTexture
 }
 
 /* 加载fbx */
 export function loadFBX(url = '', callback) {
-  const loader = new FBXLoader()
+	const loader = new FBXLoader()
 
-  const loaderService = { progress: () => { }, complete: () => { } }
+	const loaderService = { progress: () => { }, complete: () => { } }
 
-  loader.load(
-    url,
-    (object3d) => {
-      loaderService.complete(object3d)
+	loader.load(
+		url,
+		(object3d) => {
+			loaderService.complete(object3d)
 
-      object3d.traverse((obj) => {
-        if (obj.material) {
-          if (Array.isArray(obj.material)) obj.material.map((item) => changeModelMaterial(item))
-          else changeModelMaterial(obj.material)
+			object3d.traverse((obj) => {
+				if (obj.material) {
+					if (Array.isArray(obj.material)) obj.material.map((item) => changeModelMaterial(item))
+					else changeModelMaterial(obj.material)
 
-          function changeModelMaterial(material) {
-            material.side = THREE.DoubleSide
+					function changeModelMaterial(material) {
+						material.side = THREE.DoubleSide
 
-            material.vertexColors = false
-          }
-        }
-      })
+						material.vertexColors = false
+					}
+				}
+			})
 
-      callback(object3d)
-    },
+			callback(object3d)
+		},
 
-    (xhr) => loaderService.progress(xhr.loaded / xhr.total, xhr),
-  )
+		(xhr) => loaderService.progress(xhr.loaded / xhr.total, xhr),
+	)
 
-  return loaderService
+	return loaderService
 }
 
 /* gltf/glb 模型 */
 export function loadGLTF(url = '', point, dracoPath = '/draco/', callback = () => { }) {
-  const loader = new GLTFLoader()
+	const loader = new GLTFLoader()
 
-  const loaderService = { progress: () => { }, complete: () => { } }
+	const loaderService = { progress: () => { }, complete: () => { } }
 
-  loader.setDRACOLoader(new DRACOLoader().setDecoderPath(dracoPath))
+	loader.setDRACOLoader(new DRACOLoader().setDecoderPath(dracoPath))
 
-  loader.load(
-    url,
+	loader.load(
+		url,
 
-    (gltf) => {
-      loaderService.complete(gltf.scene)
+		(gltf) => {
+			loaderService.complete(gltf.scene)
 
-      gltf.scene.animations = gltf.animations
+			gltf.scene.animations = gltf.animations
 
-      gltf.scene.position.set(point.x, point.y, point.z)
+			gltf.scene.position.set(point.x, point.y, point.z)
 
-      callback(gltf.scene)
-    },
+			callback(gltf.scene)
+		},
 
-    (xhr) => loaderService.progress(xhr.loaded / xhr.total, xhr),
+		(xhr) => loaderService.progress(xhr.loaded / xhr.total, xhr),
 
-    (e) => { },
-  )
+		(e) => { },
+	)
 
-  return loaderService
+	return loaderService
 }
 
 /* 获取材质列表 */
 export function getMaterials(object3d) {
-  let materialArr = []
+	let materialArr = []
 
-  object3d.traverse((c) => {
-    if (c.isMesh) {
-      if (Array.isArray(c.material))
-        c.material.forEach((i) => {
-          materialArr.push(i)
-        })
-      else {
-        materialArr.push(c.material)
-      }
-    }
-  })
+	object3d.traverse((c) => {
+		if (c.isMesh) {
+			if (Array.isArray(c.material))
+				c.material.forEach((i) => {
+					materialArr.push(i)
+				})
+			else {
+				materialArr.push(c.material)
+			}
+		}
+	})
 
-  object3d.disposeRoot = function () {
-    this.traverse((c) => c.isMesh && c.geometry?.dispose())
+	object3d.disposeRoot = function () {
+		this.traverse((c) => c.isMesh && c.geometry?.dispose())
 
-    this?.RootMaterials.forEach((i) => {
-      i.dispose()
+		this?.RootMaterials.forEach((i) => {
+			i.dispose()
 
-      i.map?.dispose()
-    })
-  }
+			i.map?.dispose()
+		})
+	}
 
-  return [...new Set(materialArr)]
+	return [...new Set(materialArr)]
 }
 
 /* obj 模型 */
 export function loadOBJ(url = '', callback = () => { }) {
-  const loader = new OBJLoader()
+	const loader = new OBJLoader()
 
-  const mtlLoader = new MTLLoader()
+	const mtlLoader = new MTLLoader()
 
-  const loaderService = { progress: () => { }, complete: () => { } }
+	const loaderService = { progress: () => { }, complete: () => { } }
 
-  mtlLoader.load(url.replace('.obj', '.mtl'), (mtl) => {
-    mtl.preload()
+	mtlLoader.load(url.replace('.obj', '.mtl'), (mtl) => {
+		mtl.preload()
 
-    loader.setMaterials(mtl)
+		loader.setMaterials(mtl)
 
-    loader.load(
-      url,
-      (obj) => {
-        loaderService.complete(obj)
+		loader.load(
+			url,
+			(obj) => {
+				loaderService.complete(obj)
 
-        callback(obj)
-      },
+				callback(obj)
+			},
 
-      (xhr) => loaderService.progress(xhr.loaded / xhr.total, xhr),
-      (e) => { },
-    )
-  })
+			(xhr) => loaderService.progress(xhr.loaded / xhr.total, xhr),
+			(e) => { },
+		)
+	})
 
-  return loaderService
+	return loaderService
+}
+
+// 手动合并多个几何体
+function mergeGeometries(geometries) {
+	if (geometries.length === 0) return null
+	if (geometries.length === 1) return geometries[0]
+
+	let totalVertices = 0
+	let totalIndices = 0
+	let hasIndices = geometries[0].index !== null
+
+	// 计算总顶点数和索引数
+	for (const geo of geometries) {
+		totalVertices += geo.attributes.position.count
+		if (geo.index) {
+			totalIndices += geo.index.count
+		}
+	}
+
+	// 创建合并后的几何体
+	const mergedGeometry = new THREE.BufferGeometry()
+
+	// 合并顶点位置
+	const positionArray = new Float32Array(totalVertices * 3)
+	const normalArray = new Float32Array(totalVertices * 3)
+	const uvArray = new Float32Array(totalVertices * 2)
+
+	let vertexOffset = 0
+
+	for (const geo of geometries) {
+		const pos = geo.attributes.position
+		const norm = geo.attributes.normal
+		const uv = geo.attributes.uv
+
+		// 复制顶点数据
+		positionArray.set(pos.array, vertexOffset * 3)
+		if (norm) normalArray.set(norm.array, vertexOffset * 3)
+		if (uv) uvArray.set(uv.array, vertexOffset * 2)
+
+		vertexOffset += pos.count
+	}
+
+	mergedGeometry.setAttribute('position', new THREE.BufferAttribute(positionArray, 3))
+	mergedGeometry.setAttribute('normal', new THREE.BufferAttribute(normalArray, 3))
+	mergedGeometry.setAttribute('uv', new THREE.BufferAttribute(uvArray, 2))
+
+	// 处理索引
+	if (hasIndices) {
+		const indexArray = new Uint32Array(totalIndices)
+		let indexOffset = 0
+		let vertexOffset = 0
+
+		for (const geo of geometries) {
+			for (let i = 0; i < geo.index.count; i++) {
+				indexArray[indexOffset + i] = geo.index.array[i] + vertexOffset
+			}
+			indexOffset += geo.index.count
+			vertexOffset += geo.attributes.position.count
+		}
+
+		mergedGeometry.setIndex(new THREE.BufferAttribute(indexArray, 1))
+	}
+
+	return mergedGeometry
+}
+
+/* 自定义几何体 */
+export function loadCustomGeometry(rootInfo, callback = () => { }) {
+	const loaderService = { progress: () => { }, complete: () => { } }
+
+	try {
+		console.log('loadCustomGeometry called with:', rootInfo)
+		const { geometryType, geometry, material, point, name, drawingPoints, userData, modelType: rootModelType } = rootInfo
+		let meshGeometry = null
+
+		// 获取modelType（支持顶层或userData内部）
+		let modelType = rootModelType
+		if (!modelType && userData && userData.modelType) {
+			modelType = userData.modelType
+		}
+
+		// 优先使用drawingPoints创建几何体
+		if (drawingPoints && Array.isArray(drawingPoints) && drawingPoints.length > 0) {
+			console.log('Creating geometry from drawingPoints:', drawingPoints.length, 'points')
+
+			// wall类型：沿路径生成墙体片段
+			if (modelType === 'wall') {
+				if (drawingPoints.length < 2) {
+					console.error('Wall requires at least 2 points')
+					meshGeometry = new THREE.BoxGeometry(1, 1, 0.2)
+				} else {
+					const wallParams = userData?.wallParams || {}
+					const thickness = wallParams?.thickness || (material?.depth || (userData?.depth || (userData?.thickness || 0.2)))
+					const height = wallParams?.height || (material?.height || (userData?.height || 2.5))
+
+					// 创建所有墙体片段
+					const geometries = []
+					for (let i = 0; i < drawingPoints.length - 1; i++) {
+						const start = new THREE.Vector3(drawingPoints[i].x, 0, drawingPoints[i].z)
+						const end = new THREE.Vector3(drawingPoints[i + 1].x, 0, drawingPoints[i + 1].z)
+
+						// 计算线段方向和长度
+						const direction = new THREE.Vector3().subVectors(end, start)
+						const length = direction.length()
+
+						if (length < 0.001) continue
+
+						// 计算垂直方向（用于墙体厚度）
+						const perpDirection = new THREE.Vector3(-direction.z, 0, direction.x).normalize()
+
+						// 计算墙体四个角点（矩形在xz平面）
+						const halfThickness = thickness / 2
+						const p1 = start.clone().add(perpDirection.clone().multiplyScalar(halfThickness))
+						const p2 = start.clone().add(perpDirection.clone().multiplyScalar(-halfThickness))
+						const p3 = end.clone().add(perpDirection.clone().multiplyScalar(-halfThickness))
+						const p4 = end.clone().add(perpDirection.clone().multiplyScalar(halfThickness))
+
+						// 创建矩形Shape
+						const shape = new THREE.Shape()
+						shape.moveTo(p1.x, p1.z)
+						shape.lineTo(p2.x, p2.z)
+						shape.lineTo(p3.x, p3.z)
+						shape.lineTo(p4.x, p4.z)
+						shape.closePath()
+
+						// 挤压成3D墙体
+						const extrudeSettings = {
+							depth: height,
+							bevelEnabled: false
+						}
+
+						const segmentGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
+						segmentGeometry.rotateX(Math.PI / 2)
+						segmentGeometry.translate(0, height / 2, 0)
+						geometries.push(segmentGeometry)
+						console.log(`Wall segment ${i}: ${geometries.length}, vertices: ${segmentGeometry.attributes.position.count}`)
+					}
+
+					console.log(`Total wall segments: ${geometries.length}`)
+
+					// 合并所有片段
+					if (geometries.length === 0) {
+						console.error('No wall segments created')
+						meshGeometry = new THREE.BoxGeometry(1, 1, 0.2)
+					} else if (geometries.length === 1) {
+						meshGeometry = geometries[0]
+					} else {
+						meshGeometry = mergeGeometries(geometries)
+						if (!meshGeometry || meshGeometry.attributes.position.count === 0) {
+							console.error('Merge failed, using first geometry')
+							meshGeometry = geometries[0]
+						}
+					}
+				}
+			} else // 默认处理方式 - 根据modelType创建适当的几何体
+				if (modelType === 'ground') {
+					// ground类型：使用drawingPoints创建平面几何体
+					const shape = new THREE.Shape()
+					if (drawingPoints.length > 0) {
+						shape.moveTo(drawingPoints[0].x, drawingPoints[0].z)
+						for (let i = 1; i < drawingPoints.length; i++) {
+							shape.lineTo(drawingPoints[i].x, drawingPoints[i].z)
+						}
+						shape.closePath()
+
+						// 使用ShapeGeometry创建平面，直接生成在xy面上
+						meshGeometry = new THREE.ShapeGeometry(shape)
+						// 旋转90度使其生成在xz面上，保持与原来相同的方向
+						meshGeometry.rotateX(-Math.PI)
+					} else {
+						console.error('drawingPoints array is empty for ground type')
+						meshGeometry = new THREE.PlaneGeometry(10, 10)
+						// 将PlaneGeometry从xy面旋转到xz面
+						meshGeometry.rotateX(-Math.PI)
+					}
+				} else if (modelType === 'room' || modelType === 'elevator') {
+					// room和elevator类型：直接跳过不处理
+					console.log('Skipping room/elevator type, no geometry created')
+					// 跳过处理，不创建几何体
+					meshGeometry = null
+					// room和elevator类型：使用drawingPoints创建挤压几何体
+					// const shape = new THREE.Shape()
+					// if (drawingPoints.length > 0) {
+					// 	shape.moveTo(drawingPoints[0].x, drawingPoints[0].z)
+					// 	for (let i = 1; i < drawingPoints.length; i++) {
+					// 		shape.lineTo(drawingPoints[i].x, drawingPoints[i].z)
+					// 	}
+					// 	shape.closePath()
+
+					// 	const extrudeParams = userData?.extrudeParams || {}
+					// 	const depth = extrudeParams?.depth || (material?.depth || (userData?.depth || 0.2))
+
+					// 	const extrudeSettings = {
+					// 		depth: depth,
+					// 		bevelEnabled: extrudeParams?.bevelEnabled || false,
+					// 		bevelThickness: extrudeParams?.bevelThickness || 0.1,
+					// 		bevelSize: extrudeParams?.bevelSize || 0.1,
+					// 		bevelOffset: extrudeParams?.bevelOffset || 0,
+					// 		bevelSegments: extrudeParams?.bevelSegments || 1,
+					// 		curveSegments: extrudeParams?.curveSegments || 20,
+					// 		steps: extrudeParams?.steps || 1
+					// 	}
+					// 	meshGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
+					// 	meshGeometry.rotateX(-Math.PI)
+					// } else {
+					// 	console.error('drawingPoints array is empty for room/elevator type')
+					// 	meshGeometry = new THREE.BoxGeometry(10, 10, 0.2)
+					// }
+				} else {
+					// 其他类型：计算宽高并创建立方体
+					if (drawingPoints.length >= 2) {
+						const minX = Math.min(...drawingPoints.map(p => p.x))
+						const maxX = Math.max(...drawingPoints.map(p => p.x))
+						const minY = Math.min(...drawingPoints.map(p => p.y))
+						const maxY = Math.max(...drawingPoints.map(p => p.y))
+						const minZ = Math.min(...drawingPoints.map(p => p.z || 0))
+						const maxZ = Math.max(...drawingPoints.map(p => p.z || 0))
+						const width = Math.max(maxX - minX, 0.1)
+						const height = Math.max(maxZ - minZ, 0.1)
+						const depth = Math.max(maxY - minY, 0.1)
+						meshGeometry = new THREE.BoxGeometry(width, height, depth)
+						meshGeometry.userData.centerPos = {
+							x: (minX + maxX) / 2,
+							y: depth / 2,
+							z: (minZ + maxZ) / 2
+						}
+					} else {
+						console.error('Not enough points to calculate dimensions')
+						meshGeometry = new THREE.BoxGeometry(1, 1, 1)
+					}
+				}
+		}
+
+
+
+		// 根据几何体类型创建不同的材质和对象
+		let object = null
+		// 检查meshGeometry是否为null，如果为null则不创建对象
+		if (meshGeometry === null) {
+			console.log('No meshGeometry created, skipping object creation')
+			// 创建一个空组，不包含任何对象
+			const group = new THREE.Group()
+			group.name = name || 'EmptyGroup'
+			group.rootInfo = rootInfo
+			loaderService.complete(group)
+			callback(group)
+			return loaderService
+		}
+		if (geometryType === 'Line') {
+			// 线几何体使用LineBasicMaterial和Line
+			const lineMaterial = new THREE.LineBasicMaterial({
+				color: material?.color || (userData?.color || 0x336699),
+				transparent: material?.transparent || (userData?.transparent || false),
+				opacity: material?.opacity || (userData?.opacity || 0.5),
+				linewidth: material?.linewidth || (userData?.linewidth || 1),
+				// 支持线的类型
+				linecap: material?.linecap || (userData?.linecap || 'round'),
+				linejoin: material?.linejoin || (userData?.linejoin || 'round')
+			})
+			object = new THREE.Line(meshGeometry, lineMaterial)
+		} else if (geometryType === 'Point') {
+			// 点几何体使用PointsMaterial和Points
+			const pointMaterial = new THREE.PointsMaterial({
+				color: material?.color || (userData?.color || 0x336699),
+				transparent: material?.transparent || (userData?.transparent || false),
+				opacity: material?.opacity || (userData?.opacity || 0.5),
+				size: material?.size || (userData?.size || 5),
+				sizeAttenuation: material?.sizeAttenuation !== false || (userData?.sizeAttenuation !== false),
+				// 支持点的颜色映射
+				vertexColors: material?.vertexColors || (userData?.vertexColors || false)
+			})
+			object = new THREE.Points(meshGeometry, pointMaterial)
+		} else {
+			// 获取材质类型，默认使用MeshStandardMaterial以支持更多属性
+			const materialType = material?.type || (userData?.materialType || 'MeshStandardMaterial')
+			let meshMaterial = null
+
+			// 通用材质属性
+			const baseMaterialProps = {
+				color: material?.color || (userData?.color || 0xffffff),
+				transparent: material?.transparent || (userData?.transparent || false),
+				opacity: material?.opacity || (userData?.opacity || 1),
+				side: material?.side || (userData?.side || THREE.DoubleSide),
+				wireframe: material?.wireframe || (userData?.wireframe || false),
+				visible: material?.visible || (userData?.visible !== false)
+			}
+
+			// 根据材质类型创建不同的材质
+			if (materialType === 'MeshBasicMaterial') {
+				meshMaterial = new THREE.MeshBasicMaterial(baseMaterialProps)
+			} else if (materialType === 'MeshPhongMaterial') {
+				meshMaterial = new THREE.MeshPhongMaterial({
+					...baseMaterialProps,
+					emissive: material?.emissive || (userData?.emissive || 0x000000),
+					shininess: material?.shininess || (userData?.shininess || 30),
+					specular: material?.specular || (userData?.specular || 0x111111)
+				})
+			} else if (materialType === 'MeshLambertMaterial') {
+				meshMaterial = new THREE.MeshLambertMaterial({
+					...baseMaterialProps,
+					emissive: material?.emissive || (userData?.emissive || 0x000000)
+				})
+			} else {
+				// 默认使用MeshStandardMaterial
+				meshMaterial = new THREE.MeshStandardMaterial({
+					...baseMaterialProps,
+					roughness: material?.roughness || (userData?.roughness || 0.9),
+					metalness: material?.metalness || (userData?.metalness || 0.1),
+					emissive: material?.emissive || (userData?.emissive || 0x000000),
+					clearcoat: material?.clearcoat || (userData?.clearcoat || 0),
+					clearcoatRoughness: material?.clearcoatRoughness || (userData?.clearcoatRoughness || 0)
+				})
+			}
+
+			// 添加额外的材质属性
+			if (material?.map || userData?.map) {
+				// 如果有纹理映射
+				console.log('Material texture mapping not implemented yet')
+				// 这里可以添加纹理加载逻辑
+			}
+
+			object = new THREE.Mesh(meshGeometry, meshMaterial)
+		}
+
+		// 创建组并添加对象
+		const group = new THREE.Group()
+		group.add(object)
+
+		// 添加线框效果（使用EdgesGeometry只显示边缘，不显示内部三角面）
+		if (geometryType !== 'Line' && geometryType !== 'Point') {
+			const edgesGeometry = new THREE.EdgesGeometry(meshGeometry)
+			const edgesMaterial = new THREE.LineBasicMaterial({
+				color: material?.wireframeColor || (userData?.wireframeColor || 0x000000),
+				transparent: true,
+				opacity: material?.wireframeOpacity || (userData?.wireframeOpacity || 0.6)
+			})
+			const wireframeLines = new THREE.LineSegments(edgesGeometry, edgesMaterial)
+			wireframeLines.name = name ? `${name}_wireframe` : 'wireframe'
+			group.add(wireframeLines)
+		}
+
+		group.name = name || 'CustomGeometry'
+
+		// 设置rootInfo
+		group.rootInfo = rootInfo
+
+		// 完成加载
+		loaderService.complete(group)
+		callback(group)
+	}
+	catch (error) {
+		console.error('加载自定义几何体失败:', error)
+		console.error('rootInfo:', rootInfo)
+		// 如果出错，返回一个明显的红色立方体以便调试
+		const mesh = new THREE.Mesh(
+			new THREE.BoxGeometry(2, 2, 2),
+			new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: true })
+		)
+		const group = new THREE.Group()
+		group.add(mesh)
+		group.name = 'ErrorGeometry'
+		group.rootInfo = rootInfo
+		loaderService.complete(group)
+		callback(group)
+	}
+
+	return loaderService
 }
 
 /* 性能监控 */
 export function setStats(DOM) {
-  let stats = new Stats()
+	let stats = new Stats()
 
-  stats.setMode(0)
+	stats.setMode(0)
 
-  // 设置监视器位置
-  stats.domElement.style.position = 'absolute'
+	// 设置监视器位置
+	stats.domElement.style.position = 'absolute'
 
-  stats.domElement.style.top = DOM.getBoundingClientRect().top + 'px'
+	stats.domElement.style.top = DOM.getBoundingClientRect().top + 'px'
 
-  stats.domElement.style.left = DOM.getBoundingClientRect().left + 'px'
+	stats.domElement.style.left = DOM.getBoundingClientRect().left + 'px'
 
-  stats.setStats = () => !DOM.contains(stats.domElement) && DOM.appendChild(stats.domElement)
+	stats.setStats = () => !DOM.contains(stats.domElement) && DOM.appendChild(stats.domElement)
 
-  stats.destroy = () => DOM.contains(stats.domElement) && DOM.removeChild(stats.domElement)
+	stats.destroy = () => DOM.contains(stats.domElement) && DOM.removeChild(stats.domElement)
 
-  return stats
+	return stats
 }
 
 /* 设置时钟 fps */
 export function setFpsClock(FPS = 144) {
-  const clock = new THREE.Clock()
+	const clock = new THREE.Clock()
 
-  if (FPS === null) return (render) => render(clock.getDelta())
+	if (FPS === null) return (render) => render(clock.getDelta())
 
-  const renderT = 1 / FPS
+	const renderT = 1 / FPS
 
-  let timeS = 0
+	let timeS = 0
 
-  return (render) => {
-    const T = clock.getDelta()
+	return (render) => {
+		const T = clock.getDelta()
 
-    timeS = timeS + T
+		timeS = timeS + T
 
-    if (timeS > renderT) {
-      render(T)
+		if (timeS > renderT) {
+			render(T)
 
-      timeS = 0
-    }
-  }
+			timeS = 0
+		}
+	}
 }
 
 /* 变换控制 */
 export function setTransformControls(scene, camera, renderer, orbitControl) {
-  const transformControls = new TransformControls(camera, renderer.domElement)
+	const transformControls = new TransformControls(camera, renderer.domElement)
 
-  transformControls.name = 'TransformControls'
+	transformControls.name = 'TransformControls'
 
-  // transformControls.traverse((c) => (c.text = 'TransformControls'))
+	// transformControls.traverse((c) => (c.text = 'TransformControls'))
 
-  scene.add(transformControls.getHelper())
+	scene.add(transformControls.getHelper())
 
-  const box3 = new THREE.Box3()
+	const box3 = new THREE.Box3()
 
-  transformControls.addEventListener('dragging-changed', (event) => {
-    orbitControl.enabled = !event.value
+	transformControls.addEventListener('dragging-changed', (event) => {
+		orbitControl.enabled = !event.value
 
-    transformControls.drag_change_callback(event.value)
+		transformControls.drag_change_callback(event.value)
 
-    transformControls.dragChangeCallback?.(event.value)
-  })
+		transformControls.dragChangeCallback?.(event.value)
+	})
 
-  transformControls.addEventListener('change', () => {
-    if (!transformControls.box3Helper) return
+	transformControls.addEventListener('change', () => {
+		if (!transformControls.box3Helper) return
 
-    if (['Group', 'Mesh'].includes(transformControls?.object?.type)) {
-      transformControls.box3Helper.box = box3.setFromObject(transformControls.object)
+		if (['Group', 'Mesh'].includes(transformControls?.object?.type)) {
+			transformControls.box3Helper.box = box3.setFromObject(transformControls.object)
 
-      transformControls.box3Helper.visible = true
-    } else {
-      transformControls.box3Helper.visible = false
-    }
-  })
+			transformControls.box3Helper.visible = true
+		} else {
+			transformControls.box3Helper.visible = false
+		}
+	})
 
-  return transformControls
+	return transformControls
 }
 
 /* 鼠标位置 */
 export function getWebGLMouse(event) {
-  return new THREE.Vector2(
-    (event.offsetX / event.target.clientWidth) * 2 - 1,
+	return new THREE.Vector2(
+		(event.offsetX / event.target.clientWidth) * 2 - 1,
 
-    -(event.offsetY / event.target.clientHeight) * 2 + 1,
-  )
+		-(event.offsetY / event.target.clientHeight) * 2 + 1,
+	)
 }
 
 /* 射线碰撞 */
 export function clickIntersect(mouse, CAMERA, SCENE) {
-  const raycaster = new THREE.Raycaster()
+	const raycaster = new THREE.Raycaster()
 
-  raycaster.setFromCamera(mouse, CAMERA)
+	raycaster.setFromCamera(mouse, CAMERA)
 
-  //获取射线碰撞的物体
-  const intersects = raycaster.intersectObjects(SCENE.children)
+	//获取射线碰撞的物体
+	const intersects = raycaster.intersectObjects(SCENE.children)
 
-  return intersects.filter(
-    (i) => i.object.text !== 'TransformControls' && i.object.isMesh && i.object.visible,
-  )
+	return intersects.filter(
+		(i) => i.object.text !== 'TransformControls' && i.object.isMesh && i.object.visible,
+	)
 }
 
 /* 后期渲染 */
 export function setEffectComposer(scene, camera, renderer, threeDom) {
-  //创建效果组合器对象，可以在该对象上添加后期处理通道，通过配置该对象，使它可以渲染我们的场景，并应用额外的后期处理步骤，在render循环中，使用EffectComposer渲染场景、应用通道，并输出结果。
-  const Composer = new EffectComposer(renderer)
+	//创建效果组合器对象，可以在该对象上添加后期处理通道，通过配置该对象，使它可以渲染我们的场景，并应用额外的后期处理步骤，在render循环中，使用EffectComposer渲染场景、应用通道，并输出结果。
+	const Composer = new EffectComposer(renderer)
 
-  const pixelRatio = renderer.getPixelRatio()
+	const pixelRatio = renderer.getPixelRatio()
 
-  Composer.setSize(threeDom.clientWidth, threeDom.clientHeight)
+	Composer.setSize(threeDom.clientWidth, threeDom.clientHeight)
 
-  Composer.setPixelRatio(pixelRatio)
+	Composer.setPixelRatio(pixelRatio)
 
-  Composer.setRenderWay = (type = '效果渲染') => {
-    if (type === '源渲染') Composer.EffectComposerRender = () => renderer.render(scene, camera)
-    else Composer.EffectComposerRender = () => Composer.render()
+	Composer.setRenderWay = (type = '效果渲染') => {
+		if (type === '源渲染') Composer.EffectComposerRender = () => renderer.render(scene, camera)
+		else Composer.EffectComposerRender = () => Composer.render()
 
-    Composer.renderWay = type
-  }
+		Composer.renderWay = type
+	}
 
-  Composer.setRenderWay()
+	Composer.setRenderWay()
 
-  Composer.effectPass = {}
+	Composer.effectPass = {}
 
-  // 多场景渲染
-  const renderPass = new RenderPass(scene, camera)
+	// 多场景渲染
+	const renderPass = new RenderPass(scene, camera)
 
-  Composer.addPass(renderPass)
+	Composer.addPass(renderPass)
 
-  // ssao 通道
-  const saoPass = new SAOPass(scene, camera)
+	// ssao 通道
+	const saoPass = new SAOPass(scene, camera)
 
-  saoPass.enabled = false
+	saoPass.enabled = false
 
-  saoPass.params.saoIntensity = 0.01
+	saoPass.params.saoIntensity = 0.01
 
-  saoPass.params.saoScale = 100
+	saoPass.params.saoScale = 100
 
-  Composer.addPass(saoPass)
+	Composer.addPass(saoPass)
 
-  Composer.effectPass.saoPass = saoPass
+	Composer.effectPass.saoPass = saoPass
 
-  //unrealBloomPass 泛光通道
-  const unrealBloomPass = new UnrealBloomPass(
-    new THREE.Vector2(threeDom.clientWidth, threeDom.clientHeight),
-    1.5,
-    0.4,
-    0.85,
-  )
+	//unrealBloomPass 泛光通道
+	const unrealBloomPass = new UnrealBloomPass(
+		new THREE.Vector2(threeDom.clientWidth, threeDom.clientHeight),
+		1.5,
+		0.4,
+		0.85,
+	)
 
-  unrealBloomPass.enabled = false
+	unrealBloomPass.enabled = false
 
-  Composer.addPass(unrealBloomPass)
+	Composer.addPass(unrealBloomPass)
 
-  Composer.effectPass.unrealBloomPass = unrealBloomPass
+	Composer.effectPass.unrealBloomPass = unrealBloomPass
 
-  // ssr 通道
-  const ssrPass = new SSRPass({
-    renderer,
-    scene,
-    camera,
-    width: threeDom.clientWidth,
-    height: threeDom.clientHeight,
-    selects: scene.SsrMeshList,
-  })
+	// ssr 通道
+	const ssrPass = new SSRPass({
+		renderer,
+		scene,
+		camera,
+		width: threeDom.clientWidth,
+		height: threeDom.clientHeight,
+		selects: scene.SsrMeshList,
+	})
 
-  ssrPass.thickness = 0.018 //厚度
+	ssrPass.thickness = 0.018 //厚度
 
-  ssrPass.infiniteThick = false //是否无限厚度
+	ssrPass.infiniteThick = false //是否无限厚度
 
-  ssrPass.maxDistance = 0.01 //最大距离
+	ssrPass.maxDistance = 0.01 //最大距离
 
-  ssrPass.opacity = 0.5
+	ssrPass.opacity = 0.5
 
-  ssrPass.enabled = false
+	ssrPass.enabled = false
 
-  Composer.addPass(ssrPass)
+	Composer.addPass(ssrPass)
 
-  Composer.effectPass.ssrPass = ssrPass
+	Composer.effectPass.ssrPass = ssrPass
 
-  // 需要选中的物体对象, 传入需要边界线进行高亮处理的对象
-  const outlinePass = new OutlinePass(
-    new THREE.Vector2(threeDom.clientWidth, threeDom.clientHeight),
-    scene,
-    camera,
-  )
+	// 需要选中的物体对象, 传入需要边界线进行高亮处理的对象
+	const outlinePass = new OutlinePass(
+		new THREE.Vector2(threeDom.clientWidth, threeDom.clientHeight),
+		scene,
+		camera,
+	)
 
-  outlinePass.renderToScreen = true
+	outlinePass.renderToScreen = true
 
-  outlinePass.edgeStrength = 4 //粗
+	outlinePass.edgeStrength = 2 //粗
 
-  outlinePass.edgeGlow = 0 //发光
+	outlinePass.edgeGlow = 0 //发光
 
-  outlinePass.edgeThickness = 2 //光晕粗
+	outlinePass.edgeThickness = 2 //光晕粗
 
-  outlinePass.pulsePeriod = 0 //闪烁
+	outlinePass.pulsePeriod = 0 //闪烁
 
-  outlinePass.usePatternTexture = false //是否使用贴图
+	outlinePass.usePatternTexture = false //是否使用贴图
 
-  outlinePass.visibleEdgeColor.set(0xfafe2f) // 设置显示的颜色
+	outlinePass.visibleEdgeColor.set(0xfafe2f) // 设置显示的颜色
 
-  outlinePass.hiddenEdgeColor.set(0xfafe2f) // 设置隐藏的颜色
+	outlinePass.hiddenEdgeColor.set(0xfafe2f) // 设置隐藏的颜色
 
-  outlinePass.overlayMaterial.blending = THREE.CustomBlending
+	outlinePass.overlayMaterial.blending = THREE.CustomBlending
 
-  outlinePass.overlayMaterial.blendSrc = THREE.OneFactor
+	outlinePass.overlayMaterial.blendSrc = THREE.OneFactor
 
-  Composer.addPass(outlinePass)
+	Composer.addPass(outlinePass)
 
-  Composer.effectPass.outlinePass = outlinePass
+	Composer.effectPass.outlinePass = outlinePass
 
-  // 颜色校正器
-  const outPutPass = new OutputPass()
+	// 颜色校正器
+	const outPutPass = new OutputPass()
 
-  Composer.addPass(outPutPass)
+	Composer.addPass(outPutPass)
 
-  //锯齿处理
-  const fxaaPass = new ShaderPass(FXAAShader)
+	//锯齿处理
+	const fxaaPass = new ShaderPass(FXAAShader)
 
-  fxaaPass.multPixel = 1
+	fxaaPass.multPixel = 1
 
-  fxaaPass.resize = () => {
-    fxaaPass.material.uniforms['resolution'].value.x =
-      fxaaPass.multPixel / (threeDom.clientWidth * pixelRatio)
+	fxaaPass.resize = () => {
+		fxaaPass.material.uniforms['resolution'].value.x =
+			fxaaPass.multPixel / (threeDom.clientWidth * pixelRatio)
 
-    fxaaPass.material.uniforms['resolution'].value.y =
-      fxaaPass.multPixel / (threeDom.clientHeight * pixelRatio)
-  }
+		fxaaPass.material.uniforms['resolution'].value.y =
+			fxaaPass.multPixel / (threeDom.clientHeight * pixelRatio)
+	}
 
-  fxaaPass.resize()
+	fxaaPass.resize()
 
-  Composer.addPass(fxaaPass)
+	Composer.addPass(fxaaPass)
 
-  Composer.effectPass.fxaaPass = fxaaPass
+	Composer.effectPass.fxaaPass = fxaaPass
 
-  // 遮罩通道
-  const screenMaskPass = new ScreenMaskPass()
+	// 遮罩通道
+	const screenMaskPass = new ScreenMaskPass()
 
-  screenMaskPass.enabled = false
+	screenMaskPass.enabled = false
 
-  Composer.addPass(screenMaskPass)
+	Composer.addPass(screenMaskPass)
 
-  Composer.effectPass.screenMaskPass = screenMaskPass
+	Composer.effectPass.screenMaskPass = screenMaskPass
 
-  // 渲染器大小改变
-  Composer.resize = () => {
-    Composer.setSize(threeDom.clientWidth, threeDom.clientHeight)
+	// 渲染器大小改变
+	Composer.resize = () => {
+		Composer.setSize(threeDom.clientWidth, threeDom.clientHeight)
 
-    unrealBloomPass.setSize(threeDom.clientWidth, threeDom.clientHeight)
+		unrealBloomPass.setSize(threeDom.clientWidth, threeDom.clientHeight)
 
-    fxaaPass.resize()
-  }
+		fxaaPass.resize()
+	}
 
-  return { Composer, outlinePass, unrealBloomPass }
+	return { Composer, outlinePass, unrealBloomPass }
 }
 
 /* css2d渲染 */
 export function setCss2DRenderer(threeDom) {
-  const CssRender = new CSS2DRenderer()
+	const CssRender = new CSS2DRenderer()
 
-  CssRender.resize = () => {
-    CssRender.setSize(threeDom.clientWidth, threeDom.clientHeight)
+	CssRender.resize = () => {
+		CssRender.setSize(threeDom.clientWidth, threeDom.clientHeight)
 
-    CssRender.domElement.style.zIndex = 0
+		CssRender.domElement.style.zIndex = 0
 
-    CssRender.domElement.style.position = 'relative'
+		CssRender.domElement.style.position = 'relative'
 
-    CssRender.domElement.style.top = -threeDom.clientHeight * 2 + 'px'
+		CssRender.domElement.style.top = -threeDom.clientHeight * 2 + 'px'
 
-    CssRender.domElement.style.height = threeDom.clientHeight + 'px'
+		CssRender.domElement.style.height = threeDom.clientHeight + 'px'
 
-    CssRender.domElement.style.width = threeDom.clientWidth + 'px'
+		CssRender.domElement.style.width = threeDom.clientWidth + 'px'
 
-    CssRender.domElement.style.pointerEvents = 'none'
-  }
+		CssRender.domElement.style.pointerEvents = 'none'
+	}
 
-  CssRender.resize()
+	CssRender.resize()
 
-  threeDom.appendChild(CssRender.domElement)
+	threeDom.appendChild(CssRender.domElement)
 
-  return { CssRender, CSS2DObject }
+	return { CssRender, CSS2DObject }
 }
 
 /* css3d 渲染 */
 export function setCss3DRenderer(threeDom) {
-  const Css3Render = new CSS3DRenderer()
+	const Css3Render = new CSS3DRenderer()
 
-  Css3Render.resize = () => {
-    Css3Render.setSize(threeDom.clientWidth, threeDom.clientHeight)
+	Css3Render.resize = () => {
+		Css3Render.setSize(threeDom.clientWidth, threeDom.clientHeight)
 
-    Css3Render.domElement.style.zIndex = 0
+		Css3Render.domElement.style.zIndex = 0
 
-    Css3Render.domElement.style.position = 'relative'
+		Css3Render.domElement.style.position = 'relative'
 
-    Css3Render.domElement.style.top = -threeDom.clientHeight + 'px'
+		Css3Render.domElement.style.top = -threeDom.clientHeight + 'px'
 
-    Css3Render.domElement.style.height = threeDom.clientHeight + 'px'
+		Css3Render.domElement.style.height = threeDom.clientHeight + 'px'
 
-    Css3Render.domElement.style.width = threeDom.clientWidth + 'px'
+		Css3Render.domElement.style.width = threeDom.clientWidth + 'px'
 
-    Css3Render.domElement.style.pointerEvents = 'none'
-  }
+		Css3Render.domElement.style.pointerEvents = 'none'
+	}
 
-  Css3Render.resize()
+	Css3Render.resize()
 
-  threeDom.appendChild(Css3Render.domElement)
+	threeDom.appendChild(Css3Render.domElement)
 
-  return { Css3Render, CSS3DObject }
+	return { Css3Render, CSS3DObject }
 }
 
 /* 获取两点之间指定比例点 */
 export function getDistanceScalePoint(point1, point2, scale = 0.9) {
-  const distance = point1.distanceTo(point2)
+	const distance = point1.distanceTo(point2)
 
-  const direction = new THREE.Vector3().subVectors(point2, point1).normalize()
+	const direction = new THREE.Vector3().subVectors(point2, point1).normalize()
 
-  return direction.multiplyScalar(distance * scale).add(point1)
+	return direction.multiplyScalar(distance * scale).add(point1)
 }
 
 /* 视角动画 */
 export function createGsap(position, position_, gsapQuery = null) {
-  //设置动画 x轴运动 持续时间
-  return gsap.to(
-    position,
+	//设置动画 x轴运动 持续时间
+	return gsap.to(
+		position,
 
-    {
-      ...position_,
+		{
+			...position_,
 
-      //间隔时间
-      duration: 2,
+			//间隔时间
+			duration: 2,
 
-      //动画参数名
-      ease: 'none',
+			//动画参数名
+			ease: 'none',
 
-      //重复次数
-      repeat: 0,
+			//重复次数
+			repeat: 0,
 
-      //往返移动
-      yoyo: false,
+			//往返移动
+			yoyo: false,
 
-      yoyoEase: true,
+			yoyoEase: true,
 
-      ...gsapQuery,
-    },
-  )
+			...gsapQuery,
+		},
+	)
 }
 
 /* 动画播放 */
 export function setMixerAnimation(object3d, mixerFrameCall = () => { }) {
-  const clock = new THREE.Clock()
+	const clock = new THREE.Clock()
 
-  const mixer = new THREE.AnimationMixer(object3d)
+	const mixer = new THREE.AnimationMixer(object3d)
 
-  object3d.mixerRender = () => {
-    const deltaTime = clock.getDelta()
+	object3d.mixerRender = () => {
+		const deltaTime = clock.getDelta()
 
-    mixerFrameCall()
+		mixerFrameCall()
 
-    mixer.update(deltaTime)
-  }
+		mixer.update(deltaTime)
+	}
 
-  return mixer
+	return mixer
 }
 
 /* 执行 混合器动作 */
 export function runMixerAction(mixer, action, speed = 1, startTime = 0, loop = true) {
-  const animationAction = mixer.clipAction(action)
+	const animationAction = mixer.clipAction(action)
 
-  animationAction.loop = loop ? THREE.LoopRepeat : THREE.LoopOnce // 循环
+	animationAction.loop = loop ? THREE.LoopRepeat : THREE.LoopOnce // 循环
 
-  animationAction.time = startTime
+	animationAction.time = startTime
 
-  animationAction.timeScale = speed // 播放速度
+	animationAction.timeScale = speed // 播放速度
 
-  animationAction.clampWhenFinished = true //停留到最后一帧
+	animationAction.clampWhenFinished = true //停留到最后一帧
 
-  return animationAction
+	return animationAction
 }
 
 /* 获取两点之间指定距离点  */
 export function getPointDistance(point1, point2, distance) {
-  // 获取两向量差值  向量归一化  向量乘距离
-  return new THREE.Vector3()
-    .subVectors(point2, point1)
-    .normalize()
-    .multiplyScalar(distance)
-    .add(point1)
+	// 获取两向量差值  向量归一化  向量乘距离
+	return new THREE.Vector3()
+		.subVectors(point2, point1)
+		.normalize()
+		.multiplyScalar(distance)
+		.add(point1)
 }
 
 /* 相机目标点 距离点 */
 export function getCameraTargetPoint(camera, distance) {
-  const dir = new THREE.Vector3() // 创建方向向量
+	const dir = new THREE.Vector3() // 创建方向向量
 
-  camera.getWorldDirection(dir) // 获得相机的朝向方向
+	camera.getWorldDirection(dir) // 获得相机的朝向方向
 
-  // 计算出距相机一定距离的目标点坐标
-  const target = new THREE.Vector3()
+	// 计算出距相机一定距离的目标点坐标
+	const target = new THREE.Vector3()
 
-  target.copy(camera.position).add(dir.multiplyScalar(distance))
+	target.copy(camera.position).add(dir.multiplyScalar(distance))
 
-  return target
+	return target
 }
 
 /* 指针锁定控制器 */
 export function setPointLockControls(camera, DOM) {
-  // 创建 PointerLockControls 对象
-  const pointLockControls = new PointerLockControls(camera, DOM)
+	// 创建 PointerLockControls 对象
+	const pointLockControls = new PointerLockControls(camera, DOM)
 
-  // 追加参数
-  pointLockControls.speed = 0.5
+	// 追加参数
+	pointLockControls.speed = 0.5
 
-  // 处理键盘事件以实现相机的移动
-  const keyboard = {}
+	// 处理键盘事件以实现相机的移动
+	const keyboard = {}
 
-  const moveForward = () => pointLockControls.moveForward(pointLockControls.speed)
+	const moveForward = () => pointLockControls.moveForward(pointLockControls.speed)
 
-  const moveBackward = () => pointLockControls.moveForward(-pointLockControls.speed)
+	const moveBackward = () => pointLockControls.moveForward(-pointLockControls.speed)
 
-  const moveLeft = () => pointLockControls.moveRight(-pointLockControls.speed)
+	const moveLeft = () => pointLockControls.moveRight(-pointLockControls.speed)
 
-  const moveRight = () => pointLockControls.moveRight(pointLockControls.speed)
+	const moveRight = () => pointLockControls.moveRight(pointLockControls.speed)
 
-  const moveUp = () => (pointLockControls.getObject().position.y += pointLockControls.speed)
+	const moveUp = () => (pointLockControls.getObject().position.y += pointLockControls.speed)
 
-  const moveDown = () => (pointLockControls.getObject().position.y -= pointLockControls.speed)
+	const moveDown = () => (pointLockControls.getObject().position.y -= pointLockControls.speed)
 
-  // 第一人称
-  pointLockControls.PointLockRender = (deltaTime) => {
-    if (!pointLockControls.disabledMove) {
-      if (keyboard['KeyW']) {
-        moveForward()
-      } else if (keyboard['KeyA']) {
-        moveLeft()
-      } else if (keyboard['KeyS']) {
-        moveBackward()
-      } else if (keyboard['KeyD']) {
-        moveRight()
-      } else if (keyboard['Space']) {
-        moveUp()
-      } else if (keyboard['KeyC']) {
-        moveDown()
-      }
-    }
+	// 第一人称
+	pointLockControls.PointLockRender = (deltaTime) => {
+		if (!pointLockControls.disabledMove) {
+			if (keyboard['KeyW']) {
+				moveForward()
+			} else if (keyboard['KeyA']) {
+				moveLeft()
+			} else if (keyboard['KeyS']) {
+				moveBackward()
+			} else if (keyboard['KeyD']) {
+				moveRight()
+			} else if (keyboard['Space']) {
+				moveUp()
+			} else if (keyboard['KeyC']) {
+				moveDown()
+			}
+		}
 
-    pointLockControls.renderCallback &&
-      pointLockControls.renderCallback(keyboard, pointLockControls.speed, deltaTime)
-  }
+		pointLockControls.renderCallback &&
+			pointLockControls.renderCallback(keyboard, pointLockControls.speed, deltaTime)
+	}
 
-  // 键盘事件
-  const onKeyDown = function (event) {
-    event.preventDefault()
+	// 键盘事件
+	const onKeyDown = function (event) {
+		event.preventDefault()
 
-    keyboard[event.code] = true
-  }
+		keyboard[event.code] = true
+	}
 
-  // 键盘事件
-  const onKeyUp = function (event) {
-    event.preventDefault()
+	// 键盘事件
+	const onKeyUp = function (event) {
+		event.preventDefault()
 
-    keyboard[event.code] = false
-  }
+		keyboard[event.code] = false
+	}
 
-  // 锁定事件
-  pointLockControls.addEventListener('lock', () => {
-    window.addEventListener('keydown', onKeyDown)
+	// 锁定事件
+	pointLockControls.addEventListener('lock', () => {
+		window.addEventListener('keydown', onKeyDown)
 
-    window.addEventListener('keyup', onKeyUp)
-  })
+		window.addEventListener('keyup', onKeyUp)
+	})
 
-  pointLockControls.addEventListener('change', () => { })
+	pointLockControls.addEventListener('change', () => { })
 
-  // 解锁事件
-  pointLockControls.addEventListener('unlock', () => {
-    window.removeEventListener('keydown', onKeyDown)
+	// 解锁事件
+	pointLockControls.addEventListener('unlock', () => {
+		window.removeEventListener('keydown', onKeyDown)
 
-    window.removeEventListener('keyup', onKeyUp)
+		window.removeEventListener('keyup', onKeyUp)
 
-    pointLockControls.renderCallback = null
-  })
+		pointLockControls.renderCallback = null
+	})
 
-  // 启动指针锁定
-  pointLockControls.lockStart = (callback) => {
-    window.addEventListener('keydown', onKeyDown)
+	// 启动指针锁定
+	pointLockControls.lockStart = (callback) => {
+		window.addEventListener('keydown', onKeyDown)
 
-    window.addEventListener('keyup', onKeyUp)
+		window.addEventListener('keyup', onKeyUp)
 
-    pointLockControls.lock()
+		pointLockControls.lock()
 
-    pointLockControls.renderCallback = callback
-  }
+		pointLockControls.renderCallback = callback
+	}
 
-  return pointLockControls
+	return pointLockControls
 }
 
 /* 获取物体中心等数据 */
 export function getObjectBox3(object) {
-  const box = new THREE.Box3().setFromObject(object)
+	const box = new THREE.Box3().setFromObject(object)
 
-  const { max, min } = box
+	const { max, min } = box
 
-  const center = new THREE.Vector3()
+	const center = new THREE.Vector3()
 
-  box.getCenter(center)
+	box.getCenter(center)
 
-  const radius = new THREE.Vector3().subVectors(max, min).length() / 2
+	const radius = new THREE.Vector3().subVectors(max, min).length() / 2
 
-  return { max, min, center, radius }
+	return { max, min, center, radius }
 }
 
 /* 获取最佳视角 */
 export function getBestViewTarget(object, scale = 2.5) {
-  const { center, max } = getObjectBox3(object)
+	const { center, max } = getObjectBox3(object)
 
-  const distance = new THREE.Vector3().subVectors(max, center).length() * scale
+	const distance = new THREE.Vector3().subVectors(max, center).length() * scale
 
-  const position = getPointDistance(center, max, distance)
+	const position = getPointDistance(center, max, distance)
 
-  return { position, target: center }
+	return { position, target: center }
 }
 
 /* 模型键盘变换 */
 export function transformModelWithKeyboard(model, keyboard, speed) {
-  if (keyboard['KeyW']) {
-    model.position.z -= speed
-  } else if (keyboard['KeyA']) {
-    model.position.x -= speed
-  } else if (keyboard['KeyS']) {
-    model.position.z += speed
-  } else if (keyboard['KeyD']) {
-    model.position.x += speed
-  } else if (keyboard['ArrowUp']) {
-    model.position.y += speed
-  } else if (keyboard['ArrowDown']) {
-    model.position.y -= speed
-  }
+	if (keyboard['KeyW']) {
+		model.position.z -= speed
+	} else if (keyboard['KeyA']) {
+		model.position.x -= speed
+	} else if (keyboard['KeyS']) {
+		model.position.z += speed
+	} else if (keyboard['KeyD']) {
+		model.position.x += speed
+	} else if (keyboard['ArrowUp']) {
+		model.position.y += speed
+	} else if (keyboard['ArrowDown']) {
+		model.position.y -= speed
+	}
 }
 
 /* 设置mesh 材质属性 */
 export function setMeshMaterial(mesh, callback) {
-  if (Array.isArray(mesh.material)) {
-    mesh.material.forEach((i) => callback(i))
-  } else {
-    callback(mesh.material)
-  }
+	if (Array.isArray(mesh.material)) {
+		mesh.material.forEach((i) => callback(i))
+	} else {
+		callback(mesh.material)
+	}
 }
 
 /* 多变形顶点组算法处理  生成 索引组 面点组 uv组 */
 export function multShapeGroup(pList, type = 'fence') {
-  const length = pList.length
+	const length = pList.length
 
-  const indexGroup =
-    type === 'fence'
-      ? pList
-        .map(
-          (i, k) =>
-            k - 1 > -1 && k + 1 < length && (k % 2 === 0 ? [k, k + 1, k - 1] : [k, k - 1, k + 1]),
-        )
-        .filter((i) => i)
-        .reduce((i, j) => [...i, ...j], [])
-      : pList
-        .map((i, k) => (k >= 2 ? [0, k - 1, k] : false))
-        .filter((i) => i)
-        .reduce((i, j) => [...i, ...j], [])
+	const indexGroup =
+		type === 'fence'
+			? pList
+				.map(
+					(i, k) =>
+						k - 1 > -1 && k + 1 < length && (k % 2 === 0 ? [k, k + 1, k - 1] : [k, k - 1, k + 1]),
+				)
+				.filter((i) => i)
+				.reduce((i, j) => [...i, ...j], [])
+			: pList
+				.map((i, k) => (k >= 2 ? [0, k - 1, k] : false))
+				.filter((i) => i)
+				.reduce((i, j) => [...i, ...j], [])
 
-  const faceGroup = pList.reduce((j, i) => [...j, i.x, i.y, i.z], [])
+	const faceGroup = pList.reduce((j, i) => [...j, i.x, i.y, i.z], [])
 
-  const uvMaxMin = pList.reduce(
-    (p, i) => ({ x: [...p['x'], i['x']], y: [...p['y'], i['y']], z: [...p['z'], i['z']] }),
-    { x: [], y: [], z: [] },
-  )
+	const uvMaxMin = pList.reduce(
+		(p, i) => ({ x: [...p['x'], i['x']], y: [...p['y'], i['y']], z: [...p['z'], i['z']] }),
+		{ x: [], y: [], z: [] },
+	)
 
-  // vu 点计算 二维面
-  const Maxp = new THREE.Vector3(
-    Math.max(...uvMaxMin.x),
-    Math.max(...uvMaxMin.y),
-    Math.max(...uvMaxMin.z),
-  ) // 最大点
+	// vu 点计算 二维面
+	const Maxp = new THREE.Vector3(
+		Math.max(...uvMaxMin.x),
+		Math.max(...uvMaxMin.y),
+		Math.max(...uvMaxMin.z),
+	) // 最大点
 
-  const Minp = new THREE.Vector3(
-    Math.min(...uvMaxMin.x),
-    Math.min(...uvMaxMin.y),
-    Math.min(...uvMaxMin.z),
-  ) // 最小点
+	const Minp = new THREE.Vector3(
+		Math.min(...uvMaxMin.x),
+		Math.min(...uvMaxMin.y),
+		Math.min(...uvMaxMin.z),
+	) // 最小点
 
-  const W = Maxp.x - Minp.x
+	const W = Maxp.x - Minp.x
 
-  const H = Maxp.y - Minp.y
+	const H = Maxp.y - Minp.y
 
-  const L = W > H ? W : H // 以最大为基准
+	const L = W > H ? W : H // 以最大为基准
 
-  // 顶点uv计算
-  const uvGroup = pList
-    .map((i, k, o) => new THREE.Vector2((i.x - Minp.x) / L, (i.y - Minp.y) / L))
-    .reduce((i, j) => [...i, ...j], [])
+	// 顶点uv计算
+	const uvGroup = pList
+		.map((i, k, o) => new THREE.Vector2((i.x - Minp.x) / L, (i.y - Minp.y) / L))
+		.reduce((i, j) => [...i, ...j], [])
 
-  return { indexGroup, faceGroup, uvGroup }
+	return { indexGroup, faceGroup, uvGroup }
 }
 
 /* 根据顶点组生成物体 */
 export function multShapePlaneGeometry(faceGroup, indexGroup, uvGroup) {
-  const geometry = new THREE.BufferGeometry()
+	const geometry = new THREE.BufferGeometry()
 
-  // 因为在两个三角面片里，这两个顶点都需要被用到。
-  const vertices = new Float32Array(faceGroup)
+	// 因为在两个三角面片里，这两个顶点都需要被用到。
+	const vertices = new Float32Array(faceGroup)
 
-  // itemSize = 3 因为每个顶点都是一个三元组。
-  geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
+	// itemSize = 3 因为每个顶点都是一个三元组。
+	geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
 
-  // 索引组 面
-  if (indexGroup) {
-    // 格式化索引面组
-    let indexs = new Uint16Array(indexGroup)
+	// 索引组 面
+	if (indexGroup) {
+		// 格式化索引面组
+		let indexs = new Uint16Array(indexGroup)
 
-    // 添加索引组
-    geometry.index = new THREE.BufferAttribute(indexs, 1)
-  }
+		// 添加索引组
+		geometry.index = new THREE.BufferAttribute(indexs, 1)
+	}
 
-  // uv 是二维坐标相当于三维物体展开图
-  if (uvGroup) geometry.attributes.uv = new THREE.Float32BufferAttribute(uvGroup, 2)
+	// uv 是二维坐标相当于三维物体展开图
+	if (uvGroup) geometry.attributes.uv = new THREE.Float32BufferAttribute(uvGroup, 2)
 
-  geometry.computeVertexNormals()
+	geometry.computeVertexNormals()
 
-  return geometry
+	return geometry
 }
 
 /* 更新多顶点物体 */
 export function updateMultShapePlaneGeometry(geometry, faceGroup, indexGroup, uvGroup) {
-  geometry.setIndex(indexGroup)
+	geometry.setIndex(indexGroup)
 
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(faceGroup, 3))
+	geometry.setAttribute('position', new THREE.Float32BufferAttribute(faceGroup, 3))
 
-  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvGroup, 2))
+	geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvGroup, 2))
 
-  delete geometry.attributes.normal
+	delete geometry.attributes.normal
 
-  geometry.computeVertexNormals()
+	geometry.computeVertexNormals()
 }
 
 /* 视频贴图 */
 export function createVideoTexture(url) {
-  const video = document.createElement('video')
+	const video = document.createElement('video')
 
-  video.crossOrigin = 'anonymous'
+	video.crossOrigin = 'anonymous'
 
-  video.src = url
+	video.src = url
 
-  video.muted = true
+	video.muted = true
 
-  video.loop = true
+	video.loop = true
 
-  video.play()
+	video.play()
 
-  const texture = new THREE.VideoTexture(video)
+	const texture = new THREE.VideoTexture(video)
 
-  return texture
+	return texture
 }
 
 /* 将中心点设为原点 */
 export function translationOriginForMesh(mesh) {
-  // 计算模型的包围盒
-  const boundingBox = new THREE.Box3().setFromObject(mesh)
+	// 计算模型的包围盒
+	const boundingBox = new THREE.Box3().setFromObject(mesh)
 
-  boundingBox.getCenter(mesh.position)
+	boundingBox.getCenter(mesh.position)
 
-  mesh.geometry.center()
+	mesh.geometry.center()
 }
 
 /* 将中心点设为原点 */
 export function translationOriginForGroup(group) {
-  // 计算模型的包围盒
-  const boundingBox = new THREE.Box3().setFromObject(group)
+	// 计算模型的包围盒
+	const boundingBox = new THREE.Box3().setFromObject(group)
 
-  // 计算模型的中心点
-  boundingBox.getCenter(group.position)
+	// 计算模型的中心点
+	boundingBox.getCenter(group.position)
 
-  group.translationOriginDiff = group.position.clone()
+	group.translationOriginDiff = group.position.clone()
 
-  // 计算变换后的向量
-  group.getTransformedVector = (vec3) => {
-    const transformVector = vec3.clone()
+	// 计算变换后的向量
+	group.getTransformedVector = (vec3) => {
+		const transformVector = vec3.clone()
 
-    // 中心变换同步
-    transformVector.sub(group.translationOriginDiff)
+		// 中心变换同步
+		transformVector.sub(group.translationOriginDiff)
 
-    // 缩放同步
-    transformVector.multiply(group.scale)
+		// 缩放同步
+		transformVector.multiply(group.scale)
 
-    // 旋转同步
-    transformVector.applyEuler(group.rotation)
+		// 旋转同步
+		transformVector.applyEuler(group.rotation)
 
-    // 位置同步
-    transformVector.add(group.position)
+		// 位置同步
+		transformVector.add(group.position)
 
-    return transformVector
-  }
+		return transformVector
+	}
 
-  // 变换子模型位置
-  group.traverse((c) => {
-    c.isMesh && c.position.sub(group.position)
+	// 变换子模型位置
+	group.traverse((c) => {
+		c.isMesh && c.position.sub(group.position)
 
-    c.initTranslate = c.position.clone()
-  })
+		c.initTranslate = c.position.clone()
+	})
 
-  // 重置模型位置
-  group.position.set(0, 0, 0)
+	// 重置模型位置
+	group.position.set(0, 0, 0)
 }
 
 /* 获取经纬度转换二维坐标方式 */
 export function coordToVector2(coord, slace = 10000) {
-  const [lng, lat] = coord
+	const [lng, lat] = coord
 
-  const [x, y] = proj4('EPSG:4326', 'EPSG:3857', [lng, lat])
+	const [x, y] = proj4('EPSG:4326', 'EPSG:3857', [lng, lat])
 
-  return new THREE.Vector2(x / slace, y / slace)
+	return new THREE.Vector2(x / slace, y / slace)
 }
 
 /* 转换为三维坐标 */
 export function coordToVector3(coord, slace = 10000) {
-  const [lng, lat] = coord
+	const [lng, lat] = coord
 
-  const [x, y] = proj4('EPSG:4326', 'EPSG:3857', [lng, lat])
+	const [x, y] = proj4('EPSG:4326', 'EPSG:3857', [lng, lat])
 
-  return new THREE.Vector3(x / slace, y / slace, 0)
+	return new THREE.Vector3(x / slace, y / slace, 0)
 }
 
 /* 处理内存 */
 export function meshDispose(mesh) {
-  mesh.geometry.dispose()
+	mesh.geometry.dispose()
 
-  if (Array.isArray(mesh.material)) {
-    mesh.material.forEach((i) => {
-      i.dispose()
+	if (Array.isArray(mesh.material)) {
+		mesh.material.forEach((i) => {
+			i.dispose()
 
-      i.map?.dispose()
-    })
-  } else {
-    mesh.material.dispose()
+			i.map?.dispose()
+		})
+	} else {
+		mesh.material.dispose()
 
-    mesh.material.map?.dispose()
-  }
+		mesh.material.map?.dispose()
+	}
 }
 
 /* 创建视图 辅助器 */
 export function setViewHelper(camera, DOM) {
-  const viewHelper = new ViewHelper(camera, DOM)
+	const viewHelper = new ViewHelper(camera, DOM)
 
-  const viewHelperDOM = document.createElement('div')
+	const viewHelperDOM = document.createElement('div')
 
-  viewHelperDOM.style.position = 'absolute'
+	viewHelperDOM.style.position = 'absolute'
 
-  DOM.appendChild(viewHelperDOM)
+	DOM.appendChild(viewHelperDOM)
 
-  return viewHelper
+	return viewHelper
 }
 
 /* 使用贴图创建精灵物体 */
 export function setSpriteMesh(texture) {
-  const spriteMaterial = new THREE.SpriteMaterial({ sizeAttenuation: true, map: texture })
+	const spriteMaterial = new THREE.SpriteMaterial({ sizeAttenuation: true, map: texture })
 
-  const sprite = new THREE.Sprite(spriteMaterial)
+	const sprite = new THREE.Sprite(spriteMaterial)
 
-  return sprite
+	return sprite
 }
 
 /* 创建box3辅助器 */
 export function setBox3Helper(color = 0xffff00) {
-  const box = new THREE.Box3()
+	const box = new THREE.Box3()
 
-  const box3Helper = new THREE.Box3Helper(box, color)
+	const box3Helper = new THREE.Box3Helper(box, color)
 
-  box3Helper.name = 'Box3Helper'
+	box3Helper.name = 'Box3Helper'
 
-  box3Helper.visible = false
+	box3Helper.visible = false
 
-  return box3Helper
+	return box3Helper
 }
 
 /* 创建line2 物体 */
 export function createLine2FromPoints(points) {
-  const material = new LineMaterial({
-    color: 0xffffff,
+	const material = new LineMaterial({
+		color: 0xffffff,
 
-    linewidth: 4,
+		linewidth: 4,
 
-    vertexColors: false,
+		vertexColors: false,
 
-    dashed: false,
+		dashed: false,
 
-    alphaToCoverage: false,
-  })
+		alphaToCoverage: false,
+	})
 
-  const geometry = new LineGeometry().setPositions(points)
+	const geometry = new LineGeometry().setPositions(points)
 
-  const line = new Line2(geometry, material)
+	const line = new Line2(geometry, material)
 
-  line.computeLineDistances()
+	line.computeLineDistances()
 
-  return line
+	return line
 }
 
 /* 物体修改材质 */
 export function meshChangeMaterial(mesh, params) {
-  if (Array.isArray(mesh.material)) mesh.material.forEach((i) => materialChangeByParams(i, params))
-  else materialChangeByParams(mesh.material, params)
+	if (Array.isArray(mesh.material)) mesh.material.forEach((i) => materialChangeByParams(i, params))
+	else materialChangeByParams(mesh.material, params)
 
-  mesh.meshRevertMaterial = () => {
-    if (Array.isArray(mesh.material)) mesh.material.forEach((i) => i.revertMaterial())
-    else mesh.material.revertMaterial()
-  }
+	mesh.meshRevertMaterial = () => {
+		if (Array.isArray(mesh.material)) mesh.material.forEach((i) => i.revertMaterial())
+		else mesh.material.revertMaterial()
+	}
 
-  return mesh
+	return mesh
 }
 
 /* group 修改材质 */
 export function groupChangeMaterial(group, params) {
-  let materials = []
+	let materials = []
 
-  group.traverse((c) => c.isMesh && !materials.includes(c.material) && materials.push(c.material))
+	group.traverse((c) => c.isMesh && !materials.includes(c.material) && materials.push(c.material))
 
-  materials.forEach((i) => materialChangeByParams(i, params))
+	materials.forEach((i) => materialChangeByParams(i, params))
 
-  group.meshRevertMaterial = () => materials.forEach((i) => i.revertMaterial())
+	group.meshRevertMaterial = () => materials.forEach((i) => i.revertMaterial())
 
-  return group
+	return group
 }
 
 /* 根据参数修改材质 */
 export function materialChangeByParams(material, params = {}) {
-  const revertParams = materialSetProperty(material, params)
+	const revertParams = materialSetProperty(material, params)
 
-  // 恢复材质
-  material.revertMaterial = () => {
-    materialSetProperty(material, revertParams)
-  }
+	// 恢复材质
+	material.revertMaterial = () => {
+		materialSetProperty(material, revertParams)
+	}
 
-  return material
+	return material
 }
 
 /* 材质修改属性 */
 function materialSetProperty(material, params = {}) {
-  const revertParams = {}
+	const revertParams = {}
 
-  Object.keys(params).forEach((key) => {
-    if (key === 'color' || key === 'emissive') {
-      revertParams[key] = material[key].getHex()
+	Object.keys(params).forEach((key) => {
+		if (key === 'color' || key === 'emissive') {
+			revertParams[key] = material[key].getHex()
 
-      material[key].set(params[key])
-    } else {
-      revertParams[key] = material[key]
+			material[key].set(params[key])
+		} else {
+			revertParams[key] = material[key]
 
-      material[key] = params[key]
-    }
-  })
+			material[key] = params[key]
+		}
+	})
 
-  material.needsUpdate = true
+	material.needsUpdate = true
 
-  return revertParams
+	return revertParams
 }
 
 /* 修改mesh 属性 */
 export function meshChangeTransform(mesh, params = {}) {
-  const revertParams = {}
+	const revertParams = {}
 
-  Object.keys(params).forEach((key) => {
-    revertParams[key] = { x: mesh[key].x, y: mesh[key].y, z: mesh[key].z }
+	Object.keys(params).forEach((key) => {
+		revertParams[key] = { x: mesh[key].x, y: mesh[key].y, z: mesh[key].z }
 
-    mesh[key].set(params[key].x, params[key].y, params[key].z)
-  })
+		mesh[key].set(params[key].x, params[key].y, params[key].z)
+	})
 
-  mesh.meshRevertTransform = () => {
-    Object.keys(revertParams).forEach((key) => {
-      mesh[key].set(revertParams[key].x, revertParams[key].y, revertParams[key].z)
-    })
-  }
+	mesh.meshRevertTransform = () => {
+		Object.keys(revertParams).forEach((key) => {
+			mesh[key].set(revertParams[key].x, revertParams[key].y, revertParams[key].z)
+		})
+	}
 
-  return mesh
+	return mesh
 }
 
 /* 物体材质克隆 */
 export function meshGroupCloneMaterial(object) {
-  object.traverse((c) => {
-    c.isCloneMaterial = true
+	object.traverse((c) => {
+		c.isCloneMaterial = true
 
-    if (c.isMesh) {
-      c.originMaterial = c.material
+		if (c.isMesh) {
+			c.originMaterial = c.material
 
-      if (Array.isArray(c.material)) c.material = c.material.map((i) => i.clone())
-      else c.material = c.material.clone()
-    }
-  })
+			if (Array.isArray(c.material)) c.material = c.material.map((i) => i.clone())
+			else c.material = c.material.clone()
+		}
+	})
 }
 
 /* 曲线运动 */
 export function createCurveFrame(curve, speed = 1, CommonFrameList) {
-  return {
-    id: Date.now(),
+	return {
+		id: Date.now(),
 
-    curve,
+		curve,
 
-    time: 0,
+		time: 0,
 
-    pause: false,
+		pause: false,
 
-    speed,
+		speed,
 
-    start: function () {
-      if (CommonFrameList.indexOf(this) > -1) return
+		start: function () {
+			if (CommonFrameList.indexOf(this) > -1) return
 
-      CommonFrameList.push(this)
+			CommonFrameList.push(this)
 
-      this.pause = false
-    },
+			this.pause = false
+		},
 
-    destroy: function () {
-      const index = CommonFrameList.indexOf(this)
+		destroy: function () {
+			const index = CommonFrameList.indexOf(this)
 
-      if (index > -1) CommonFrameList.splice(index, 1)
+			if (index > -1) CommonFrameList.splice(index, 1)
 
-      delete this.start
+			delete this.start
 
-      delete this.destroy
-    },
+			delete this.destroy
+		},
 
-    frameCallback: null,
+		frameCallback: null,
 
-    frameEndCallback: null,
+		frameEndCallback: null,
 
-    frameAnimationRender: function () {
-      if (this.pause) return
+		frameAnimationRender: function () {
+			if (this.pause) return
 
-      this.time += this.speed / 1000
+			this.time += this.speed / 1000
 
-      if (this.time > 1 || this.time < 0) {
-        this.time = this.time > 1 ? 1 : 0
+			if (this.time > 1 || this.time < 0) {
+				this.time = this.time > 1 ? 1 : 0
 
-        this.pause = true
+				this.pause = true
 
-        return this.frameEndCallback?.('end')
-      }
+				return this.frameEndCallback?.('end')
+			}
 
-      this.frameCallback?.(this.curve.getPointAt(this.time))
-    },
-  }
+			this.frameCallback?.(this.curve.getPointAt(this.time))
+		},
+	}
 }
 
 /* 曲线与物体同步 */
 export function pointSyncTransform(point, object) {
-  // 缩放同步
-  point.multiply(object.scale)
+	// 缩放同步
+	point.multiply(object.scale)
 
-  // 旋转同步
-  point.applyEuler(object.rotation)
+	// 旋转同步
+	point.applyEuler(object.rotation)
 
-  // 位置同步
-  point.add(object.position)
+	// 位置同步
+	point.add(object.position)
 
-  return point
+	return point
 }
 
 /* 获取变化信息 */
 export function getTransformInfo(mesh) {
-  const { position, rotation, scale } = mesh
+	const { position, rotation, scale } = mesh
 
-  return {
-    position: { x: position.x, y: position.y, z: position.z },
+	return {
+		position: { x: position.x, y: position.y, z: position.z },
 
-    rotation: { x: rotation.x, y: rotation.y, z: rotation.z },
+		rotation: { x: rotation.x, y: rotation.y, z: rotation.z },
 
-    scale: { x: scale.x, y: scale.y, z: scale.z },
-  }
+		scale: { x: scale.x, y: scale.y, z: scale.z },
+	}
 }
 
 /* 根据变换信息设置物体 */
 export function setTransformInfo(mesh, info) {
-  if (!info) return
+	if (!info) return
 
-  const { position, rotation, scale } = info
+	const { position, rotation, scale } = info
 
-  mesh.position.set(position.x, position.y, position.z)
+	mesh.position.set(position.x, position.y, position.z)
 
-  mesh.rotation.set(rotation.x, rotation.y, rotation.z)
+	mesh.rotation.set(rotation.x, rotation.y, rotation.z)
 
-  mesh.scale.set(scale.x, scale.y, scale.z)
+	mesh.scale.set(scale.x, scale.y, scale.z)
 }
 
 /* 执行gsap 动作 */
 export function setGsapMeshAction(mesh, _transformInfo, transformInfo_, gsapParams) {
-  const { mode, query } = gsapParams
+	const { mode, query } = gsapParams
 
-  setTransformInfo(mesh, _transformInfo)
+	setTransformInfo(mesh, _transformInfo)
 
-  const promises_gsap = ['position', 'rotation', 'scale'].map((i) => {
-    return new Promise((resolve) => {
-      gsap[mode](mesh[i], {
-        x: transformInfo_[i].x,
+	const promises_gsap = ['position', 'rotation', 'scale'].map((i) => {
+		return new Promise((resolve) => {
+			gsap[mode](mesh[i], {
+				x: transformInfo_[i].x,
 
-        y: transformInfo_[i].y,
+				y: transformInfo_[i].y,
 
-        z: transformInfo_[i].z,
+				z: transformInfo_[i].z,
 
-        ...query,
+				...query,
 
-        onComplete: resolve,
-      })
-    })
-  })
+				onComplete: resolve,
+			})
+		})
+	})
 
-  return Promise.all(promises_gsap)
+	return Promise.all(promises_gsap)
 }
 
 /* 获取动作对象 */
 export function getMeshAction(mesh, gsapParams) {
-  const { mode, query } = gsapParams
+	const { mode, query } = gsapParams
 
-  return {
-    name: '',
+	return {
+		name: '',
 
-    _transformInfo: mesh._transformInfo,
+		_transformInfo: mesh._transformInfo,
 
-    transformInfo_: getTransformInfo(mesh),
+		transformInfo_: getTransformInfo(mesh),
 
-    gsapParams: {
-      mode,
+		gsapParams: {
+			mode,
 
-      query: { ...query },
-    },
-  }
+			query: { ...query },
+		},
+	}
 }
 
 export function createPhysicsWorld(fixedTimeStep = 1 / 60, maxSubSteps = 10) {
-  const world = new CANNON.World({
-    gravity: new CANNON.Vec3(0, -9.82, 0), // m/s²
-  })
+	const world = new CANNON.World({
+		gravity: new CANNON.Vec3(0, -9.82, 0), // m/s²
+	})
 
-  // 渲染时间略有不同的时间显示物理模拟的状态
-  world.PhysicsRender = (deltaTime) => {
-    world.step(fixedTimeStep, deltaTime, maxSubSteps)
+	// 渲染时间略有不同的时间显示物理模拟的状态
+	world.PhysicsRender = (deltaTime) => {
+		world.step(fixedTimeStep, deltaTime, maxSubSteps)
 
-    world.bodies.forEach((body) => body.joinRender?.())
-  }
+		world.bodies.forEach((body) => body.joinRender?.())
+	}
 
-  return world
+	return world
 }
 
 /* 销毁scene */
 export function disposeScene(scene) {
-  scene.children.forEach((i) => {
-    scene.remove(i)
+	scene.children.forEach((i) => {
+		scene.remove(i)
 
-    i.traverse((object) => {
-      object.dispose?.()
+		i.traverse((object) => {
+			object.dispose?.()
 
-      if (object instanceof THREE.Mesh) {
-        object.geometry.dispose()
+			if (object instanceof THREE.Mesh) {
+				object.geometry.dispose()
 
-        if (object.material) {
-          if (Array.isArray(object.material))
-            object.material.forEach((material) => {
-              material.dispose()
+				if (object.material) {
+					if (Array.isArray(object.material))
+						object.material.forEach((material) => {
+							material.dispose()
 
-              material.map?.dispose()
-            })
-          else {
-            object.material.dispose()
+							material.map?.dispose()
+						})
+					else {
+						object.material.dispose()
 
-            object.material.map?.dispose()
-          }
-        }
-      }
-    })
-  })
+						object.material.map?.dispose()
+					}
+				}
+			}
+		})
+	})
 
-  scene.EnvBackground?.dispose()
+	scene.EnvBackground?.dispose()
 
-  scene.background?.dispose()
+	scene.background?.dispose()
 
-  scene.children.length = 0
+	scene.children.length = 0
 }
 
 /* 场景划分 */
 export function setClassifyScene(scene, arr = '全部') {
-  scene.children.forEach((i) => {
-    if (['Group', 'Mesh'].includes(i.type) || i.isLight) {
-      if (arr === '全部') i.visible = true
-      else arr.some((j) => i.name.indexOf(j) !== -1) ? (i.visible = true) : (i.visible = false)
-    }
-  })
+	scene.children.forEach((i) => {
+		if (['Group', 'Mesh'].includes(i.type) || i.isLight) {
+			if (arr === '全部') i.visible = true
+			else arr.some((j) => i.name.indexOf(j) !== -1) ? (i.visible = true) : (i.visible = false)
+		}
+	})
 }
 
 /* 文字几何体 */
 export function createTextGeometry(url, text, parameters = null) {
-  const loader = new FontLoader()
+	const loader = new FontLoader()
 
-  return new Promise((resolve) => {
-    loader.load(url, (font) =>
-      resolve(
-        new TextGeometry(text, {
-          font,
+	return new Promise((resolve) => {
+		loader.load(url, (font) =>
+			resolve(
+				new TextGeometry(text, {
+					font,
 
-          size: 1,
+					size: 1,
 
-          depth: 0.2,
+					depth: 0.2,
 
-          height: 0.2,
+					height: 0.2,
 
-          curveSegments: 12,
+					curveSegments: 12,
 
-          bevelEnabled: true,
+					bevelEnabled: true,
 
-          bevelThickness: 0,
+					bevelThickness: 0,
 
-          bevelSize: 0,
+					bevelSize: 0,
 
-          bevelSegments: 5,
+					bevelSegments: 5,
 
-          ...parameters,
-        }),
-      ),
-    )
-  })
+					...parameters,
+				}),
+			),
+		)
+	})
 }
 
 export function getObjectViews(object, fov = 50) {
 
-  const { center, radius, max } = getObjectBox3(object)
+	const { center, radius, max } = getObjectBox3(object)
 
-  const dir = object.getWorldDirection(new THREE.Vector3()) // 物体方向
+	const dir = object.getWorldDirection(new THREE.Vector3()) // 物体方向
 
-  const distance = radius / Math.tan((Math.PI * fov) / 360) // 根据半径和相机视角 计算出距离
+	const distance = radius / Math.tan((Math.PI * fov) / 360) // 根据半径和相机视角 计算出距离
 
-  const vector = dir.multiplyScalar(distance) // 方向距离向量
+	const vector = dir.multiplyScalar(distance) // 方向距离向量
 
-  const frontView = vector.clone().add(center)
+	const frontView = vector.clone().add(center)
 
-  const leftView = vector
-    .clone()
-    .applyAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2)
-    .add(center)
+	const leftView = vector
+		.clone()
+		.applyAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI / 2)
+		.add(center)
 
-  const rightView = vector
-    .clone()
-    .applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2)
-    .add(center)
+	const rightView = vector
+		.clone()
+		.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2)
+		.add(center)
 
-  const topView = vector
-    .clone()
-    .applyAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
-    .add(center)
+	const topView = vector
+		.clone()
+		.applyAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2)
+		.add(center)
 
-  const bottomView = vector
-    .clone()
-    .applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2)
-    .add(center)
+	const bottomView = vector
+		.clone()
+		.applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2)
+		.add(center)
 
-  const backView = vector
-    .clone()
-    .applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
-    .add(center)
+	const backView = vector
+		.clone()
+		.applyAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI)
+		.add(center)
 
-  const maxView = getPointDistance(
-    center,
-    max,
-    center.distanceTo(max) / Math.tan((Math.PI * fov) / 360),
-  )
+	const maxView = getPointDistance(
+		center,
+		max,
+		center.distanceTo(max) / Math.tan((Math.PI * fov) / 360),
+	)
 
-  return { frontView, leftView, rightView, topView, bottomView, backView, maxView, target: center }
+	return { frontView, leftView, rightView, topView, bottomView, backView, maxView, target: center }
 }

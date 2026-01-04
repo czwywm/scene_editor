@@ -70,6 +70,18 @@ function setGlobalMaterialPanel(group, folder) {
 /*  group storage */
 export function setGlobalStorage(group, storage) {
 
+    if (!storage) {
+        // 如果没有提供storage，确保group.globalConfig有默认值
+        group.globalConfig = group.globalConfig || {
+            isSaveChildren: false,
+            isSaveMaterials: false,
+            useGlobalConfig: false,
+            mesh: { castShadow: false, receiveShadow: false },
+            material: { envMap: false, envMapIntensity: 1, reflectivity: 1, isGlobalMap: false }
+        }
+        return
+    }
+
     group.globalConfig = storage
 
     if (!storage.useGlobalConfig) return

@@ -74,11 +74,18 @@ export function setMeshStorage(mesh, storage) {
 
     mesh.receiveShadow = receiveShadow
 
-    mesh.position.set(position.x, position.y, position.z)
+    // 添加空值检查，确保position、rotation、scale存在且有效
+    if (position && typeof position.x === 'number' && typeof position.y === 'number' && typeof position.z === 'number') {
+        mesh.position.set(position.x, position.y, position.z)
+    }
 
-    mesh.rotation.set(rotation.x, rotation.y, rotation.z)
+    if (rotation && typeof rotation.x === 'number' && typeof rotation.y === 'number' && typeof rotation.z === 'number') {
+        mesh.rotation.set(rotation.x, rotation.y, rotation.z)
+    }
 
-    mesh.scale.set(scale.x, scale.y, scale.z)
+    if (scale && typeof scale.x === 'number' && typeof scale.y === 'number' && typeof scale.z === 'number') {
+        mesh.scale.set(scale.x, scale.y, scale.z)
+    }
 
     setBlendShaderProgramsStorage(mesh, blendShaderPrograms)
 

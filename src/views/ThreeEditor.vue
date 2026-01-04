@@ -23,6 +23,8 @@ watch(
 				threeEditor.viewer.destroySceneRender()
 				// 再销毁控制面板管理器
 				threeEditor.viewer.controlPanelManager.destroy()
+				// 清空进度列表，避免旧条目影响新场景
+				threeEditor.progressList = []
 				// 创建新场景
 				createScene()
 			} else {
@@ -43,7 +45,7 @@ const createScene = () => {
 	try {
 		// 尝试从localStorage获取场景参数，如果不存在则使用默认模板
 		let sceneParams = null
-		let meshListParams = null
+		let modelParams = null
 		let skyParams = null
 
 		// 首先尝试获取特定场景的参数
@@ -53,15 +55,15 @@ const createScene = () => {
 			// 如果有保存的特定场景数据，使用它
 			const sceneData = JSON.parse(savedSceneData)
 			sceneParams = sceneData.sceneParams || null
-			meshListParams = sceneData.meshListParams || null
+			modelParams = sceneData.modelParams || sceneData.meshListParams || null
 			skyParams = sceneData.skyParams || null
 			console.log('加载特定场景数据:', dataCores.sceneName)
 		}
 
 		// 如果所有参数都不存在，使用模板数据
-		if (!sceneParams && !meshListParams && !skyParams) {
+		if (!sceneParams && !modelParams && !skyParams) {
 			sceneParams = tamplateJson.sceneParams || null
-			meshListParams = tamplateJson.meshListParams || null
+			modelParams = tamplateJson.modelParams || tamplateJson.meshListParams || null
 			skyParams = tamplateJson.skyParams || null
 			// console.log('使用默认模板数据')
 		}
@@ -75,13 +77,13 @@ const createScene = () => {
 				userPermissions: { autoPlace: false, proxy: false },
 			},
 			sceneParams: sceneParams,
-			meshListParams: meshListParams,
+			meshListParams: modelParams,
 			skyParams: skyParams,
-			saveEditorCallBack: (sceneParams, meshListParams) => {
+			saveEditorCallBack: (sceneParams, modelParams) => {
 				// 同时保存到特定场景存储
 				const sceneData = {
 					sceneParams,
-					meshListParams,
+					modelParams,
 					skyParams,
 				}
 				localStorage.setItem(dataCores.sceneName + '-newEditor', JSON.stringify(sceneData))

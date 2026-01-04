@@ -19,17 +19,33 @@ export function modelControlsInstall(scene, controls, transformControls, Compose
 
         const { url, type, point, name } = rootInfo
 
-        return loadModel(url, type, point, dracoPath, model => {
+        // 如果是自定义几何体类型，将完整的rootInfo传递给loadModel
+        if (type === 'custom') {
+            return loadModel(url, type, point, rootInfo, model => {
 
-            scene.add(resolveGroup(model))
+                scene.add(resolveGroup(model))
 
-            model.rootInfo = rootInfo
+                model.rootInfo = rootInfo
 
-            setGroupStorage(MixerList, model, params)
+                setGroupStorage(MixerList, model, params)
 
-            modelControls.rootFolder && setGroupPanel(controls, transformControls, Composer, MixerList, model, modelControls.rootFolder.addFolder((name || model.name) + model.id))
+                modelControls.rootFolder && setGroupPanel(controls, transformControls, Composer, MixerList, model, modelControls.rootFolder.addFolder((name || model.name) + model.id))
 
-        })
+            })
+        } else {
+            // 其他类型保持原有逻辑
+            return loadModel(url, type, point, dracoPath, model => {
+
+                scene.add(resolveGroup(model))
+
+                model.rootInfo = rootInfo
+
+                setGroupStorage(MixerList, model, params)
+
+                modelControls.rootFolder && setGroupPanel(controls, transformControls, Composer, MixerList, model, modelControls.rootFolder.addFolder((name || model.name) + model.id))
+
+            })
+        }
 
     }
 

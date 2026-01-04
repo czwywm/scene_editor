@@ -1,0 +1,1242 @@
+{
+  "version": "1.0",
+  "exportDate": "2025-12-18T05:55:54.742Z",
+  "modelCount": 14,
+  "models": [
+    {
+      "id": 0,
+      "name": "ground 1",
+      "modelType": "ground",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.1,
+        "z": 0
+      },
+      "rotation": {
+        "x": -1.571,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "ExtrudeGeometry",
+      "material": {
+        "color": 9159498,
+        "metalness": 0.2,
+        "roughness": 0.8,
+        "transparent": true,
+        "opacity": 0.3,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "ground",
+        "materialType": "color",
+        "materialColor": "#8BC34A",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "",
+        "drawingPoints": [
+          {
+            "x": -7.545467061519299,
+            "y": 0,
+            "z": 0.9654076123818729
+          },
+          {
+            "x": 2.446536235442867,
+            "y": 0,
+            "z": 0.9467427798336322
+          },
+          {
+            "x": 2.4465366349816153,
+            "y": 0,
+            "z": -0.9570704540432999
+          },
+          {
+            "x": 3.859199408655125,
+            "y": 0,
+            "z": -0.9757352927475427
+          },
+          {
+            "x": 3.859200026535476,
+            "y": 0,
+            "z": -2.842219464995202
+          },
+          {
+            "x": 9.544307205286275,
+            "y": 0,
+            "z": -2.8422194649952015
+          },
+          {
+            "x": 9.527074985993815,
+            "y": 0,
+            "z": 2.813225738811848
+          },
+          {
+            "x": -9.595549036294265,
+            "y": 0,
+            "z": 2.7385664319279672
+          },
+          {
+            "x": -9.57832244383401,
+            "y": 0,
+            "z": 1.525352561037618
+          },
+          {
+            "x": -9.044267121064237,
+            "y": 0,
+            "z": 1.525352561037618
+          },
+          {
+            "x": -9.00981280446391,
+            "y": 0,
+            "z": 0.405462609935874
+          },
+          {
+            "x": -7.532771622093731,
+            "y": 0,
+            "z": 0.3956417919145769
+          }
+        ],
+        "extrudeParams": {
+          "depth": 0.2,
+          "bevelEnabled": false,
+          "bevelThickness": 0,
+          "bevelSize": 0,
+          "bevelOffset": 0,
+          "bevelSegments": 0,
+          "extrudePath": null,
+          "steps": 1
+        },
+        "wallParams": {}
+      },
+      "castShadow": true,
+      "receiveShadow": true
+    },
+    {
+      "id": 1,
+      "name": "wall 2",
+      "modelType": "wall",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.375,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "BufferGeometry",
+      "material": {
+        "color": 240116,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.3,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "wall",
+        "materialType": "color",
+        "materialColor": "#03A9F4",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "",
+        "drawingPoints": [
+          {
+            "x": -9.578321416359143,
+            "y": 0,
+            "z": 2.7758960854894394
+          },
+          {
+            "x": -9.581118303114653,
+            "y": 0,
+            "z": 1.5519155623735255
+          },
+          {
+            "x": -9.027039530007142,
+            "y": 0,
+            "z": 1.5253525610376168
+          },
+          {
+            "x": -9.009812804463905,
+            "y": 0,
+            "z": 0.4054626099358737
+          },
+          {
+            "x": -7.545467436021935,
+            "y": 0,
+            "z": 0.3867977755946204
+          },
+          {
+            "x": -7.562695028761549,
+            "y": 0,
+            "z": 0.3867977755946204
+          },
+          {
+            "x": -7.545467436021935,
+            "y": 0,
+            "z": 0.3867977755946204
+          },
+          {
+            "x": -7.54546703735784,
+            "y": 0,
+            "z": 1.002737277299065
+          },
+          {
+            "x": -7.54546703735784,
+            "y": 0,
+            "z": 1.002737277299065
+          },
+          {
+            "x": 2.480991419267152,
+            "y": 0,
+            "z": 0.9467427798336314
+          },
+          {
+            "x": 2.46376422576253,
+            "y": 0,
+            "z": -0.9384056153988224
+          },
+          {
+            "x": 3.8764270034082515,
+            "y": 0,
+            "z": -0.975735292747542
+          },
+          {
+            "x": 3.9108828190695695,
+            "y": 0,
+            "z": -2.8422194649951993
+          },
+          {
+            "x": 9.527079607774901,
+            "y": 0,
+            "z": -2.8422194649951997
+          },
+          {
+            "x": 9.527074955487022,
+            "y": 0,
+            "z": 2.850555391895185
+          },
+          {
+            "x": -9.578321416359143,
+            "y": 0,
+            "z": 2.7758960854894394
+          },
+          {
+            "x": -9.578321416359143,
+            "y": 0,
+            "z": 2.7758960854894394
+          }
+        ],
+        "extrudeParams": {},
+        "wallParams": {
+          "thickness": 0.2,
+          "height": 0.75
+        }
+      },
+      "castShadow": false,
+      "receiveShadow": false
+    },
+    {
+      "id": 2,
+      "name": "wall 3",
+      "modelType": "wall",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.375,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "BufferGeometry",
+      "material": {
+        "color": 240116,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.3,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "wall",
+        "materialType": "color",
+        "materialColor": "#03A9F4",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "",
+        "drawingPoints": [
+          {
+            "x": -7.520723614733739,
+            "y": 0,
+            "z": 0.9869787056626008
+          },
+          {
+            "x": -7.558900257139782,
+            "y": 0,
+            "z": 2.4346664028866183
+          },
+          {
+            "x": -4.1038378793668375,
+            "y": 0,
+            "z": 2.413985152352838
+          },
+          {
+            "x": -4.1038378793668375,
+            "y": 0,
+            "z": 2.413985152352838
+          },
+          {
+            "x": -4.1038378793668375,
+            "y": 0,
+            "z": 2.413985152352838
+          }
+        ],
+        "extrudeParams": {},
+        "wallParams": {
+          "thickness": 0.2,
+          "height": 0.75
+        }
+      },
+      "castShadow": false,
+      "receiveShadow": false
+    },
+    {
+      "id": 3,
+      "name": "wall 4",
+      "modelType": "wall",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.375,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "BufferGeometry",
+      "material": {
+        "color": 240116,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.3,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "wall",
+        "materialType": "color",
+        "materialColor": "#03A9F4",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "",
+        "drawingPoints": [
+          {
+            "x": -3.5299634396209187,
+            "y": 0,
+            "z": 2.443994929391332
+          },
+          {
+            "x": 0.6057777368477828,
+            "y": 0,
+            "z": 2.4599976849741148
+          },
+          {
+            "x": 0.6353188418001929,
+            "y": 0,
+            "z": 0.9397356759126945
+          },
+          {
+            "x": 0.6353188418001929,
+            "y": 0,
+            "z": 0.9397356759126945
+          }
+        ],
+        "extrudeParams": {},
+        "wallParams": {
+          "thickness": 0.2,
+          "height": 0.75
+        }
+      },
+      "castShadow": false,
+      "receiveShadow": false
+    },
+    {
+      "id": 4,
+      "name": "wall 5",
+      "modelType": "wall",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.375,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "BufferGeometry",
+      "material": {
+        "color": 240116,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.3,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "wall",
+        "materialType": "color",
+        "materialColor": "#03A9F4",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "",
+        "drawingPoints": [
+          {
+            "x": 0.9898109897144799,
+            "y": 0,
+            "z": 1.003746717195203
+          },
+          {
+            "x": 0.9750403772745123,
+            "y": 0,
+            "z": 2.0919342936114558
+          },
+          {
+            "x": 3.810977272309541,
+            "y": 0,
+            "z": 2.1239398069794815
+          },
+          {
+            "x": 3.8109774186828185,
+            "y": 0,
+            "z": 1.7398736330411335
+          },
+          {
+            "x": 3.8109774186828185,
+            "y": 0,
+            "z": 1.7398736330411335
+          }
+        ],
+        "extrudeParams": {},
+        "wallParams": {
+          "thickness": 0.2,
+          "height": 0.75
+        }
+      },
+      "castShadow": false,
+      "receiveShadow": false
+    },
+    {
+      "id": 5,
+      "name": "wall 6",
+      "modelType": "wall",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.375,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "BufferGeometry",
+      "material": {
+        "color": 240116,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.3,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "wall",
+        "materialType": "color",
+        "materialColor": "#03A9F4",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "",
+        "drawingPoints": [
+          {
+            "x": 3.7962071625228475,
+            "y": 0,
+            "z": 1.0837605176458946
+          },
+          {
+            "x": 3.7962078733272167,
+            "y": 0,
+            "z": -0.78856274849339
+          },
+          {
+            "x": 2.6145671549271876,
+            "y": 0,
+            "z": -0.78856274849339
+          },
+          {
+            "x": 2.6145671549271876,
+            "y": 0,
+            "z": -0.78856274849339
+          }
+        ],
+        "extrudeParams": {},
+        "wallParams": {
+          "thickness": 0.2,
+          "height": 0.75
+        }
+      },
+      "castShadow": false,
+      "receiveShadow": false
+    },
+    {
+      "id": 6,
+      "name": "wall 7",
+      "modelType": "wall",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.375,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "BufferGeometry",
+      "material": {
+        "color": 240116,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.3,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "wall",
+        "materialType": "color",
+        "materialColor": "#03A9F4",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "",
+        "drawingPoints": [
+          {
+            "x": 5.984551451652983,
+            "y": 0,
+            "z": 0.210683609364654
+          },
+          {
+            "x": 4.551941085095135,
+            "y": 0,
+            "z": 0.21068360936465405
+          },
+          {
+            "x": 4.55194107781045,
+            "y": 0,
+            "z": 0.23033080403751996
+          },
+          {
+            "x": 4.533807211997717,
+            "y": 0,
+            "z": -0.9681481860862208
+          },
+          {
+            "x": 4.5700758323551405,
+            "y": 0,
+            "z": -0.9681481860862209
+          },
+          {
+            "x": 4.533807211997717,
+            "y": 0,
+            "z": -0.9681481860862208
+          },
+          {
+            "x": 8.215072178276456,
+            "y": 0,
+            "z": -0.9681481860862208
+          },
+          {
+            "x": 8.215071402605242,
+            "y": 0,
+            "z": 0.19103641462890436
+          },
+          {
+            "x": 6.60111793852598,
+            "y": 0,
+            "z": 0.210683609364654
+          },
+          {
+            "x": 6.60111793852598,
+            "y": 0,
+            "z": 0.210683609364654
+          }
+        ],
+        "extrudeParams": {},
+        "wallParams": {
+          "thickness": 0.2,
+          "height": 0.75
+        }
+      },
+      "castShadow": false,
+      "receiveShadow": false
+    },
+    {
+      "id": 7,
+      "name": "wall 8",
+      "modelType": "wall",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.375,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "BufferGeometry",
+      "material": {
+        "color": 240116,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.3,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "wall",
+        "materialType": "color",
+        "materialColor": "#03A9F4",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "",
+        "drawingPoints": [
+          {
+            "x": 6.229213440364026,
+            "y": 0,
+            "z": 0.6035300944580196
+          },
+          {
+            "x": 4.521273079988096,
+            "y": 0,
+            "z": 0.6035300944580198
+          },
+          {
+            "x": 4.501179152481924,
+            "y": 0,
+            "z": 2.1491817172523677
+          },
+          {
+            "x": 8.198367277157313,
+            "y": 0,
+            "z": 2.1491817172523677
+          },
+          {
+            "x": 8.198368208797456,
+            "y": 0,
+            "z": 0.6035300944580198
+          },
+          {
+            "x": 8.198368208797456,
+            "y": 0,
+            "z": 0.6035300944580198
+          },
+          {
+            "x": 6.83201594236636,
+            "y": 0,
+            "z": 0.559990607038707
+          },
+          {
+            "x": 6.83201594236636,
+            "y": 0,
+            "z": 0.559990607038707
+          }
+        ],
+        "extrudeParams": {},
+        "wallParams": {
+          "thickness": 0.2,
+          "height": 0.75
+        }
+      },
+      "castShadow": false,
+      "receiveShadow": false
+    },
+    {
+      "id": 8,
+      "name": "room 9",
+      "modelType": "room",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.35,
+        "z": 0
+      },
+      "rotation": {
+        "x": -1.571,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "ExtrudeGeometry",
+      "material": {
+        "color": 16758605,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.5,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "room",
+        "materialType": "color",
+        "materialColor": "#FFB74D",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "101",
+        "drawingPoints": [
+          {
+            "x": -7.547541634263692,
+            "y": 0,
+            "z": 1.0517549976192782
+          },
+          {
+            "x": -7.547540498867193,
+            "y": 0,
+            "z": 2.5560142173951945
+          },
+          {
+            "x": -7.547541670499742,
+            "y": 0,
+            "z": 1.003746717195203
+          },
+          {
+            "x": -7.547540498867193,
+            "y": 0,
+            "z": 2.5560142173951945
+          },
+          {
+            "x": 0.6057777368477828,
+            "y": 0,
+            "z": 2.4599976849741148
+          },
+          {
+            "x": 0.6205483284214398,
+            "y": 0,
+            "z": 1.0517549976192782
+          },
+          {
+            "x": -7.547541634263692,
+            "y": 0,
+            "z": 1.0517549976192782
+          },
+          {
+            "x": -7.547541670499742,
+            "y": 0,
+            "z": 1.003746717195203
+          },
+          {
+            "x": -7.547541670499742,
+            "y": 0,
+            "z": 1.003746717195203
+          }
+        ],
+        "extrudeParams": {
+          "depth": 0.5,
+          "bevelEnabled": false,
+          "bevelThickness": 0,
+          "bevelSize": 0,
+          "bevelOffset": 0,
+          "bevelSegments": 0,
+          "extrudePath": null,
+          "steps": 1
+        },
+        "wallParams": {}
+      },
+      "castShadow": true,
+      "receiveShadow": true
+    },
+    {
+      "id": 9,
+      "name": "room 10",
+      "modelType": "room",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.35,
+        "z": 0
+      },
+      "rotation": {
+        "x": -1.571,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "ExtrudeGeometry",
+      "material": {
+        "color": 16758605,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.5,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "room",
+        "materialType": "color",
+        "materialColor": "#FFB74D",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "102",
+        "drawingPoints": [
+          {
+            "x": 0.9951606023834492,
+            "y": 0,
+            "z": 1.0061236852035658
+          },
+          {
+            "x": 0.9485167962378168,
+            "y": 0,
+            "z": 2.134739295668975
+          },
+          {
+            "x": 3.840426167064696,
+            "y": 0,
+            "z": 2.1178942883367697
+          },
+          {
+            "x": 3.840427236500007,
+            "y": 0,
+            "z": -0.8131378083339651
+          },
+          {
+            "x": 2.5033074703430276,
+            "y": 0,
+            "z": -0.7794477749607933
+          },
+          {
+            "x": 2.5188549673058525,
+            "y": 0,
+            "z": 0.9218986299416102
+          },
+          {
+            "x": 0.9951606023834492,
+            "y": 0,
+            "z": 1.0061236852035658
+          },
+          {
+            "x": 0.9951606023834492,
+            "y": 0,
+            "z": 1.0061236852035658
+          }
+        ],
+        "extrudeParams": {
+          "depth": 0.5,
+          "bevelEnabled": false,
+          "bevelThickness": 0,
+          "bevelSize": 0,
+          "bevelOffset": 0,
+          "bevelSegments": 0,
+          "extrudePath": null,
+          "steps": 1
+        },
+        "wallParams": {}
+      },
+      "castShadow": true,
+      "receiveShadow": true
+    },
+    {
+      "id": 10,
+      "name": "room 11",
+      "modelType": "room",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.35,
+        "z": 0
+      },
+      "rotation": {
+        "x": -1.571,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "ExtrudeGeometry",
+      "material": {
+        "color": 16758605,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.5,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "room",
+        "materialType": "color",
+        "materialColor": "#FFB74D",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "103",
+        "drawingPoints": [
+          {
+            "x": 4.517282156188905,
+            "y": 0,
+            "z": 0.2078735506438618
+          },
+          {
+            "x": 4.517282647775998,
+            "y": 0,
+            "z": -0.9978749157141756
+          },
+          {
+            "x": 8.26514589694415,
+            "y": 0,
+            "z": -0.980143318719436
+          },
+          {
+            "x": 8.248778797389477,
+            "y": 0,
+            "z": 0.2078735506438618
+          },
+          {
+            "x": 8.248778797389477,
+            "y": 0,
+            "z": 0.2078735506438618
+          },
+          {
+            "x": 4.55001460471093,
+            "y": 0,
+            "z": 0.15467877089681972
+          },
+          {
+            "x": 4.55001460471093,
+            "y": 0,
+            "z": 0.15467877089681972
+          }
+        ],
+        "extrudeParams": {
+          "depth": 0.5,
+          "bevelEnabled": false,
+          "bevelThickness": 0,
+          "bevelSize": 0,
+          "bevelOffset": 0,
+          "bevelSegments": 0,
+          "extrudePath": null,
+          "steps": 1
+        },
+        "wallParams": {}
+      },
+      "castShadow": true,
+      "receiveShadow": true
+    },
+    {
+      "id": 11,
+      "name": "room 12",
+      "modelType": "room",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.35,
+        "z": 0
+      },
+      "rotation": {
+        "x": -1.571,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "ExtrudeGeometry",
+      "material": {
+        "color": 16758605,
+        "metalness": 0.1,
+        "roughness": 0.9,
+        "transparent": true,
+        "opacity": 0.5,
+        "side": 2
+      },
+      "userData": {
+        "modelType": "room",
+        "materialType": "color",
+        "materialColor": "#FFB74D",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "104",
+        "drawingPoints": [
+          {
+            "x": 4.534732690955308,
+            "y": 0,
+            "z": 0.6036776957342789
+          },
+          {
+            "x": 4.490420465934005,
+            "y": 0,
+            "z": 2.1719480766473627
+          },
+          {
+            "x": 8.286440136666977,
+            "y": 0,
+            "z": 2.187950833100886
+          },
+          {
+            "x": 8.27167095583813,
+            "y": 0,
+            "z": 0.5876749342099814
+          },
+          {
+            "x": 4.534732690955308,
+            "y": 0,
+            "z": 0.6036776957342789
+          },
+          {
+            "x": 4.534732690955308,
+            "y": 0,
+            "z": 0.6036776957342789
+          }
+        ],
+        "extrudeParams": {
+          "depth": 0.5,
+          "bevelEnabled": false,
+          "bevelThickness": 0,
+          "bevelSize": 0,
+          "bevelOffset": 0,
+          "bevelSegments": 0,
+          "extrudePath": null,
+          "steps": 1
+        },
+        "wallParams": {}
+      },
+      "castShadow": true,
+      "receiveShadow": true
+    },
+    {
+      "id": 12,
+      "name": "elevator 13",
+      "modelType": "elevator",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.35,
+        "z": 0
+      },
+      "rotation": {
+        "x": -1.571,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "ExtrudeGeometry",
+      "material": {
+        "color": 10395294,
+        "metalness": 0.5,
+        "roughness": 0.5,
+        "transparent": true,
+        "opacity": 0.5,
+        "side": 0
+      },
+      "userData": {
+        "modelType": "elevator",
+        "materialType": "color",
+        "materialColor": "#9E9E9E",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "东侧电梯",
+        "drawingPoints": [
+          {
+            "x": -8.788560711543994,
+            "y": 0,
+            "z": 0.5999003694246671
+          },
+          {
+            "x": -8.775896483095083,
+            "y": 0,
+            "z": 0.9566299063619563
+          },
+          {
+            "x": -8.44663606576809,
+            "y": 0,
+            "z": 0.9429095401056711
+          },
+          {
+            "x": -8.446636403744387,
+            "y": 0,
+            "z": 0.5999003694246671
+          },
+          {
+            "x": -8.788560711543994,
+            "y": 0,
+            "z": 0.5999003694246671
+          },
+          {
+            "x": -8.788560711543994,
+            "y": 0,
+            "z": 0.5999003694246671
+          }
+        ],
+        "extrudeParams": {
+          "depth": 0.5,
+          "bevelEnabled": false,
+          "bevelThickness": 0,
+          "bevelSize": 0,
+          "bevelOffset": 0,
+          "bevelSegments": 0,
+          "extrudePath": null,
+          "steps": 1
+        },
+        "wallParams": {}
+      },
+      "castShadow": true,
+      "receiveShadow": true
+    },
+    {
+      "id": 13,
+      "name": "elevator 14",
+      "modelType": "elevator",
+      "visible": true,
+      "position": {
+        "x": 0,
+        "y": 0.35,
+        "z": 0
+      },
+      "rotation": {
+        "x": -1.571,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "geometryType": "ExtrudeGeometry",
+      "material": {
+        "color": 10395294,
+        "metalness": 0.5,
+        "roughness": 0.5,
+        "transparent": true,
+        "opacity": 0.5,
+        "side": 0
+      },
+      "userData": {
+        "modelType": "elevator",
+        "materialType": "color",
+        "materialColor": "#9E9E9E",
+        "materialOpacity": 0.5,
+        "textureUrl": "",
+        "roomNumber": "西侧电梯",
+        "drawingPoints": [
+          {
+            "x": 5.982244312913035,
+            "y": 0,
+            "z": -2.644883943860978
+          },
+          {
+            "x": 5.982243939539828,
+            "y": 0,
+            "z": -2.0207758788564307
+          },
+          {
+            "x": 6.336736198742769,
+            "y": 0,
+            "z": -2.0207758788564307
+          },
+          {
+            "x": 6.336736584100096,
+            "y": 0,
+            "z": -2.6288811719902347
+          },
+          {
+            "x": 5.982244312913035,
+            "y": 0,
+            "z": -2.644883943860978
+          },
+          {
+            "x": 5.982244312913035,
+            "y": 0,
+            "z": -2.644883943860978
+          }
+        ],
+        "extrudeParams": {
+          "depth": 0.5,
+          "bevelEnabled": false,
+          "bevelThickness": 0,
+          "bevelSize": 0,
+          "bevelOffset": 0,
+          "bevelSegments": 0,
+          "extrudePath": null,
+          "steps": 1
+        },
+        "wallParams": {}
+      },
+      "castShadow": true,
+      "receiveShadow": true
+    }
+  ]
+}

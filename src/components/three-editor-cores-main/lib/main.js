@@ -129,7 +129,10 @@ export class ThreeEditor {
 			params,
 		)
 
-		this.progressList.push({ loaderService, rootInfo, params })
+		// 只有当loaderService存在时才添加到progressList，避免undefined导致的错误
+		if (loaderService) {
+			this.progressList.push({ loaderService, rootInfo, params })
+		}
 
 		return { loaderService, rootInfo, params }
 	}
@@ -236,12 +239,27 @@ export class ThreeEditor {
 		// 重新加载模型
 		if (data.modelCores && Array.isArray(data.modelCores)) {
 			data.modelCores.forEach((modelCore) => {
-				this.setModelFromInfo({
-					type: modelCore.type || 'gltf',
-					url: modelCore.url,
-					name: modelCore.name,
-					point: modelCore.position || { x: 0, y: 0, z: 0 }
-				})
+				// 检查是否包含drawingPoints，如果有则视为自定义几何体
+				if (modelCore.drawingPoints && Array.isArray(modelCore.drawingPoints)) {
+					// 自定义几何体类型
+					this.setModelFromInfo({
+						type: 'custom',
+						name: modelCore.name,
+						position: modelCore.position || { x: 0, y: 0, z: 0 },
+						geometryType: modelCore.geometryType || 'Polygon',
+						drawingPoints: modelCore.drawingPoints,
+						material: modelCore.material,
+						userData: modelCore.userData
+					})
+				} else {
+					// 传统模型类型
+					this.setModelFromInfo({
+						type: modelCore.type || 'gltf',
+						url: modelCore.url,
+						name: modelCore.name,
+						point: modelCore.position || { x: 0, y: 0, z: 0 }
+					})
+				}
 			})
 		}
 

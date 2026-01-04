@@ -1,0 +1,6 @@
+node_modules
+dist
+docs
+public/draco/
+src/components/three-editor-cores-main/docs/
+src/components/three-editor-cores-main/public/draco/
