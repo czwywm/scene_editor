@@ -21,6 +21,9 @@ export function getBasicStorage(scene, camera, renderer, controls, Composer) {
         environment: getEnvironmentStorage(scene),
 
         composer: getComposerStorage(Composer),
+        
+        // 添加drawtime参数到导出数据中
+        drawtime: scene.drawtime || null,
 
     }
 

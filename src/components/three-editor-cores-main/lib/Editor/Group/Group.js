@@ -73,7 +73,17 @@ export function resolveGroup(group) {
 /* 获取存储 */
 export function getGroupStorage(group) {
 
-	const { animationPlayParams, children, RootMaterials, rootInfo } = group
+	const { animationPlayParams, children, RootMaterials, rootInfo, deviceInfo } = group
+
+	// 从rootInfo中获取isRoom属性，如果rootInfo存在且有isRoom属性
+	const isRoom = rootInfo?.isRoom
+
+	// 确保rootInfo中的isRoom属性被正确保存，避免丢失
+	const updatedRootInfo = {
+		...rootInfo,
+		// 如果rootInfo中没有isRoom属性，尝试从group对象中获取
+		isRoom: rootInfo?.isRoom || group.isRoom
+	}
 
 	return {
 
@@ -89,9 +99,11 @@ export function getGroupStorage(group) {
 
 			children: group.globalConfig.isSaveChildren ? getMeshTreeStorage(children) : undefined,
 
+			deviceInfo,
+
 		},
 
-		rootInfo
+		rootInfo: updatedRootInfo
 
 	}
 
@@ -121,6 +133,11 @@ export function setGroupStorage(MixerList, group, storage) {
 	// 动画项
 	setGroupAnimationStorage(MixerList, group, storage.animationPlayParams)
 
+	// 设备信息
+	if (storage.deviceInfo) {
+		group.deviceInfo = storage.deviceInfo
+	}
+
 }
 
 /* 控制面板 */
@@ -131,6 +148,29 @@ export function setGroupPanel(controls, transformControls, Composer, MixerList, 
 	setGroupGlobalPanel(group, folder.addFolder('全局和子项控制'))
 
 	setGroupAnimationPanel(MixerList, group, folder.addFolder('动画配置'))
+
+	// 设备信息面板
+	const deviceInfoFolder = folder.addFolder('设备信息')
+	if (group.deviceInfo && group.deviceInfo.length > 0) {
+		group.deviceInfo.forEach((device, index) => {
+			const originalId = device.id
+			const originalName = device.name
+			const originalTid = device.tid
+			const originalTypename = device.typename
+			deviceInfoFolder.add(device, 'id').name(`设备ID`).listen().onChange(() => {
+				device.id = originalId
+			})
+			deviceInfoFolder.add(device, 'name').name(`设备名称`).listen().onChange(() => {
+				device.name = originalName
+			})
+			deviceInfoFolder.add(device, 'tid').name(`设备类型ID`).listen().onChange(() => {
+				device.tid = originalTid
+			})
+			deviceInfoFolder.add(device, 'typename').name(`设备类型`).listen().onChange(() => {
+				device.typename = originalTypename
+			})
+		})
+	}
 
 	folder.add({ fn: () => transformControls.attach(group) }, 'fn').name('选中')
 

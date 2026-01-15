@@ -14,7 +14,8 @@ export default defineConfig({
 			three: path.resolve(__dirname, 'node_modules/three'),
 		},
 	},
-	base: './',
+	// base: './',
+	base: '/jf3deditor/',
 	define: {
 		__isProduction__: process.env.NODE_ENV === 'production',
 	},

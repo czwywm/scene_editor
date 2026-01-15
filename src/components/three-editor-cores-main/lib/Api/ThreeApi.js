@@ -49,6 +49,11 @@ export function createScene() {
 
 	scene.SsrMeshList = []
 
+	// 添加默认环境光，为场景提供基础照明
+	// const ambientLight = new THREE.AmbientLight(0xffffff, 3)
+	// ambientLight.name = 'DefaultAmbientLight'
+	// scene.add(ambientLight)
+
 	return scene
 }
 
@@ -336,7 +341,6 @@ export function loadCustomGeometry(rootInfo, callback = () => { }) {
 	const loaderService = { progress: () => { }, complete: () => { } }
 
 	try {
-		console.log('loadCustomGeometry called with:', rootInfo)
 		const { geometryType, geometry, material, point, name, drawingPoints, userData, modelType: rootModelType } = rootInfo
 		let meshGeometry = null
 
@@ -348,7 +352,6 @@ export function loadCustomGeometry(rootInfo, callback = () => { }) {
 
 		// 优先使用drawingPoints创建几何体
 		if (drawingPoints && Array.isArray(drawingPoints) && drawingPoints.length > 0) {
-			console.log('Creating geometry from drawingPoints:', drawingPoints.length, 'points')
 
 			// wall类型：沿路径生成墙体片段
 			if (modelType === 'wall') {
@@ -398,12 +401,9 @@ export function loadCustomGeometry(rootInfo, callback = () => { }) {
 
 						const segmentGeometry = new THREE.ExtrudeGeometry(shape, extrudeSettings)
 						segmentGeometry.rotateX(Math.PI / 2)
-						segmentGeometry.translate(0, height / 2, 0)
+						segmentGeometry.translate(0, height, 0)
 						geometries.push(segmentGeometry)
-						console.log(`Wall segment ${i}: ${geometries.length}, vertices: ${segmentGeometry.attributes.position.count}`)
 					}
-
-					console.log(`Total wall segments: ${geometries.length}`)
 
 					// 合并所有片段
 					if (geometries.length === 0) {
@@ -433,16 +433,15 @@ export function loadCustomGeometry(rootInfo, callback = () => { }) {
 						// 使用ShapeGeometry创建平面，直接生成在xy面上
 						meshGeometry = new THREE.ShapeGeometry(shape)
 						// 旋转90度使其生成在xz面上，保持与原来相同的方向
-						meshGeometry.rotateX(-Math.PI)
+						meshGeometry.rotateX(Math.PI / 2)
 					} else {
 						console.error('drawingPoints array is empty for ground type')
 						meshGeometry = new THREE.PlaneGeometry(10, 10)
 						// 将PlaneGeometry从xy面旋转到xz面
-						meshGeometry.rotateX(-Math.PI)
+						meshGeometry.rotateX(Math.PI / 2)
 					}
 				} else if (modelType === 'room' || modelType === 'elevator') {
 					// room和elevator类型：直接跳过不处理
-					console.log('Skipping room/elevator type, no geometry created')
 					// 跳过处理，不创建几何体
 					meshGeometry = null
 					// room和elevator类型：使用drawingPoints创建挤压几何体
@@ -504,7 +503,6 @@ export function loadCustomGeometry(rootInfo, callback = () => { }) {
 		let object = null
 		// 检查meshGeometry是否为null，如果为null则不创建对象
 		if (meshGeometry === null) {
-			console.log('No meshGeometry created, skipping object creation')
 			// 创建一个空组，不包含任何对象
 			const group = new THREE.Group()
 			group.name = name || 'EmptyGroup'
@@ -582,7 +580,6 @@ export function loadCustomGeometry(rootInfo, callback = () => { }) {
 			// 添加额外的材质属性
 			if (material?.map || userData?.map) {
 				// 如果有纹理映射
-				console.log('Material texture mapping not implemented yet')
 				// 这里可以添加纹理加载逻辑
 			}
 
@@ -813,6 +810,29 @@ export function setEffectComposer(scene, camera, renderer, threeDom) {
 
 	Composer.effectPass.ssrPass = ssrPass
 
+	// 颜色校正器
+	const outPutPass = new OutputPass()
+
+	Composer.addPass(outPutPass)
+
+
+	//锯齿处理
+	const fxaaPass = new ShaderPass(FXAAShader)
+
+	fxaaPass.multPixel = 1
+
+	fxaaPass.resize = () => {
+		fxaaPass.material.uniforms['resolution'].value.x =
+			fxaaPass.multPixel / (threeDom.clientWidth * pixelRatio)
+
+		fxaaPass.material.uniforms['resolution'].value.y =
+			fxaaPass.multPixel / (threeDom.clientHeight * pixelRatio)
+	}
+
+	fxaaPass.resize()
+
+	Composer.addPass(fxaaPass)
+
 	// 需要选中的物体对象, 传入需要边界线进行高亮处理的对象
 	const outlinePass = new OutlinePass(
 		new THREE.Vector2(threeDom.clientWidth, threeDom.clientHeight),
@@ -843,28 +863,6 @@ export function setEffectComposer(scene, camera, renderer, threeDom) {
 	Composer.addPass(outlinePass)
 
 	Composer.effectPass.outlinePass = outlinePass
-
-	// 颜色校正器
-	const outPutPass = new OutputPass()
-
-	Composer.addPass(outPutPass)
-
-	//锯齿处理
-	const fxaaPass = new ShaderPass(FXAAShader)
-
-	fxaaPass.multPixel = 1
-
-	fxaaPass.resize = () => {
-		fxaaPass.material.uniforms['resolution'].value.x =
-			fxaaPass.multPixel / (threeDom.clientWidth * pixelRatio)
-
-		fxaaPass.material.uniforms['resolution'].value.y =
-			fxaaPass.multPixel / (threeDom.clientHeight * pixelRatio)
-	}
-
-	fxaaPass.resize()
-
-	Composer.addPass(fxaaPass)
 
 	Composer.effectPass.fxaaPass = fxaaPass
 

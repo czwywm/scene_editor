@@ -52,12 +52,14 @@
 </template>
 <script setup>
 import { ref, reactive, onMounted, computed, inject } from 'vue'
+import { useRoute } from 'vue-router'
 import axios from 'axios'
 import * as THREE from 'three'
 import { ElMessage } from 'element-plus'
 import { ThreeEditor } from '../components/three-editor-cores-main/lib/main.js'
 
 const DEFAULT_CONFIG = window.DEFAULT_CONFIG || {}
+const route = useRoute()
 
 const listJ = window.editorJsons.map((v) => (__isProduction__ ? '/threejs-editor/' + v : '/' + v))
 
@@ -101,7 +103,7 @@ const loadingProgress = inject('loadingProgress', ref(0))
 async function getModel() {
 	axios
 		.post(`${window.DEFAULT_CONFIG.API_URL}/api/Scene/GetSceneModel`, {
-			token: '11',
+			token: route.query.token,
 		})
 		.then((res) => {
 			if (res.data.resultCode === '0000') {
